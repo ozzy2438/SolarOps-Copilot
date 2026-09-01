@@ -1,8 +1,6 @@
-"""Phase 4's stubs fail loudly and name their phase. Owned by Phase 1."""
+"""Phase 4 stub locations stay executable as their implementations land."""
 
 from __future__ import annotations
-
-import pytest
 
 from voltdesk.evaluation.metrics import (
     abstention_precision_recall,
@@ -14,24 +12,23 @@ from voltdesk.evaluation.metrics import (
 )
 from voltdesk.evaluation.runner import load_golden_set
 
-pytestmark = pytest.mark.phase4
-
 
 def test_runner_stub_is_replaced() -> None:
     assert len(load_golden_set()) == 150
 
 
-@pytest.mark.parametrize(
-    "fn",
-    [
-        field_precision,
-        field_recall,
-        exact_match_rate,
-        abstention_precision_recall,
-        coverage_accuracy_curve,
-        summarise,
-    ],
-)
-def test_metrics_are_not_implemented(fn: object) -> None:
-    with pytest.raises(NotImplementedError, match="Phase 4"):
-        fn([])  # type: ignore[operator]
+def test_metric_stubs_are_replaced() -> None:
+    assert field_precision([]) is None
+    assert field_recall([]) is None
+    assert exact_match_rate([]) is None
+    assert abstention_precision_recall([]) == (None, None)
+    assert len(coverage_accuracy_curve([])) == 21
+
+
+def test_summarise_rejects_an_empty_run() -> None:
+    try:
+        summarise([])
+    except ValueError as exc:
+        assert "empty" in str(exc)
+    else:  # pragma: no cover - explicit failure message for the retained stub test
+        raise AssertionError("summarise accepted an empty run")

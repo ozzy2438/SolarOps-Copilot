@@ -143,11 +143,21 @@ class LiveRecordExecutor:
         exact = answer.abstained == expected_abstention and (
             answer.abstained or (contains and citations_correct is True)
         )
+        abstention_score = FieldScore(
+            field_path="should_abstain",
+            expected=expected_abstention,
+            actual=answer.abstained,
+            correct=answer.abstained == expected_abstention,
+            predicted_present=True,
+            expected_present=True,
+            confidence=answer.support_score,
+        )
         return RecordResult(
             record_id=record.record_id,
             task_type=record.task_type,
             model=model,
             exact_match=exact,
+            field_scores=[abstention_score],
             abstained=answer.abstained,
             citations_correct=citations_correct,
             latency_ms=0,
