@@ -1,0 +1,162 @@
+{
+  "$defs": {
+    "DocumentType": {
+      "description": "The kinds of inbound document VoltDesk accepts. Closed set.",
+      "enum": [
+        "electricity_bill",
+        "site_assessment",
+        "email_thread"
+      ],
+      "title": "DocumentType",
+      "type": "string"
+    },
+    "FieldForReview": {
+      "additionalProperties": false,
+      "description": "One field a human must confirm, correct, or reject.",
+      "properties": {
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "field_path": {
+          "description": "Dotted path into the extraction contract, e.g. 'nmi' or 'components.0.label'.",
+          "title": "Field Path",
+          "type": "string"
+        },
+        "proposed_value": {
+          "description": "What the model extracted. May be null.",
+          "title": "Proposed Value"
+        },
+        "reason": {
+          "description": "Why this needs a human, in the reviewer's language, not ours.",
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Quote"
+        }
+      },
+      "required": [
+        "field_path",
+        "proposed_value",
+        "confidence",
+        "reason"
+      ],
+      "title": "FieldForReview",
+      "type": "object"
+    },
+    "ReviewStatus": {
+      "enum": [
+        "auto_applied",
+        "pending_review",
+        "approved",
+        "rejected"
+      ],
+      "title": "ReviewStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One document awaiting review. Not one field - a reviewer works a document at a time.",
+  "properties": {
+    "blocking": {
+      "description": "True when nothing may be written to the CRM until this is resolved - for example a bill whose NMI is uncertain. False when the confident fields were already written and only the uncertain ones are held back.",
+      "title": "Blocking",
+      "type": "boolean"
+    },
+    "corrections": {
+      "additionalProperties": true,
+      "description": "field_path -> corrected value, filled by the reviewer. Phase 4 mines this as ground truth for the golden set; see docs/EVALUATION.md.",
+      "title": "Corrections",
+      "type": "object"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "document_id": {
+      "title": "Document Id",
+      "type": "string"
+    },
+    "document_type": {
+      "$ref": "#/$defs/DocumentType"
+    },
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/FieldForReview"
+      },
+      "minItems": 1,
+      "title": "Fields",
+      "type": "array"
+    },
+    "resolved_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Resolved At"
+    },
+    "resolved_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Resolved By"
+    },
+    "review_id": {
+      "title": "Review Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/ReviewStatus"
+    }
+  },
+  "required": [
+    "review_id",
+    "document_id",
+    "document_type",
+    "created_at",
+    "status",
+    "fields",
+    "blocking"
+  ],
+  "title": "ReviewItem",
+  "type": "object"
+}

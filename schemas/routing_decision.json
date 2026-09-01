@@ -1,0 +1,116 @@
+{
+  "$defs": {
+    "ModelChoice": {
+      "additionalProperties": false,
+      "description": "A concrete, callable model identity.",
+      "properties": {
+        "model_id": {
+          "description": "Exact provider model string, no date suffix invented by us. Anthropic IDs are listed in voltdesk/llm/pricing.py; OpenAI IDs carry a TODO(verify) there because they were not verified in Phase 1.",
+          "title": "Model Id",
+          "type": "string"
+        },
+        "provider": {
+          "$ref": "#/$defs/Provider"
+        }
+      },
+      "required": [
+        "provider",
+        "model_id"
+      ],
+      "title": "ModelChoice",
+      "type": "object"
+    },
+    "Provider": {
+      "enum": [
+        "anthropic",
+        "openai"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "RoutingStrategy": {
+      "description": "How the choice was made. Phase 4 may add members, never remove them.",
+      "enum": [
+        "static_default",
+        "task_table",
+        "cost_optimised",
+        "fallback_after_error",
+        "forced_by_caller"
+      ],
+      "title": "RoutingStrategy",
+      "type": "string"
+    },
+    "TaskType": {
+      "description": "Unit of work the router routes and the evaluator measures, one per row.",
+      "enum": [
+        "bill_extraction",
+        "site_assessment_extraction",
+        "email_extraction",
+        "knowledge_qa",
+        "schema_repair"
+      ],
+      "title": "TaskType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The record of one routing choice.",
+  "properties": {
+    "chosen": {
+      "$ref": "#/$defs/ModelChoice"
+    },
+    "considered": {
+      "description": "Candidates that were available but not chosen.",
+      "items": {
+        "$ref": "#/$defs/ModelChoice"
+      },
+      "title": "Considered",
+      "type": "array"
+    },
+    "estimated_input_tokens": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Estimated Input Tokens"
+    },
+    "fallback_of": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ModelChoice"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Set when this decision replaced a failed call."
+    },
+    "rationale": {
+      "description": "One sentence, human-readable. Written for whoever reads the audit log.",
+      "minLength": 1,
+      "title": "Rationale",
+      "type": "string"
+    },
+    "strategy": {
+      "$ref": "#/$defs/RoutingStrategy"
+    },
+    "task_type": {
+      "$ref": "#/$defs/TaskType"
+    }
+  },
+  "required": [
+    "task_type",
+    "chosen",
+    "strategy",
+    "rationale"
+  ],
+  "title": "RoutingDecision",
+  "type": "object"
+}

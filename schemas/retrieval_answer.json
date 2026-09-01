@@ -1,0 +1,244 @@
+{
+  "$defs": {
+    "AbstentionReason": {
+      "enum": [
+        "no_relevant_evidence",
+        "conflicting_evidence",
+        "insufficient_specificity",
+        "out_of_scope"
+      ],
+      "title": "AbstentionReason",
+      "type": "string"
+    },
+    "Chunk": {
+      "additionalProperties": false,
+      "description": "A retrievable unit of the corpus.",
+      "properties": {
+        "chunk_id": {
+          "title": "Chunk Id",
+          "type": "string"
+        },
+        "document_id": {
+          "title": "Document Id",
+          "type": "string"
+        },
+        "document_title": {
+          "title": "Document Title",
+          "type": "string"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "section_path": {
+          "description": "Heading breadcrumb, e.g. ['5. Inverters', '5.2 Anti-islanding'].",
+          "items": {
+            "type": "string"
+          },
+          "title": "Section Path",
+          "type": "array"
+        },
+        "source": {
+          "$ref": "#/$defs/CorpusSource"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "token_count": {
+          "minimum": 1,
+          "title": "Token Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "chunk_id",
+        "document_id",
+        "source",
+        "document_title",
+        "text",
+        "token_count"
+      ],
+      "title": "Chunk",
+      "type": "object"
+    },
+    "Citation": {
+      "additionalProperties": false,
+      "description": "A specific claim in an answer tied to a specific piece of evidence.\n\n`quote` must appear verbatim in the cited chunk. Phase 3 verifies this before\nreturning the answer; a citation that fails verification invalidates the answer\nrather than being silently dropped.",
+      "properties": {
+        "chunk_id": {
+          "title": "Chunk Id",
+          "type": "string"
+        },
+        "document_title": {
+          "title": "Document Title",
+          "type": "string"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "quote": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/CorpusSource"
+        },
+        "supports_claim": {
+          "description": "The sentence in the answer this citation backs.",
+          "minLength": 1,
+          "title": "Supports Claim",
+          "type": "string"
+        }
+      },
+      "required": [
+        "chunk_id",
+        "document_title",
+        "source",
+        "quote",
+        "supports_claim"
+      ],
+      "title": "Citation",
+      "type": "object"
+    },
+    "CorpusSource": {
+      "description": "Provenance class of a corpus document. Tier A only - the corpus is never synthetic.",
+      "enum": [
+        "cec_approved_list",
+        "manufacturer_datasheet",
+        "dnsp_connection_guideline",
+        "regulator_methodology",
+        "rebate_program_doc",
+        "internal_standard"
+      ],
+      "title": "CorpusSource",
+      "type": "string"
+    },
+    "RetrievedChunk": {
+      "additionalProperties": false,
+      "description": "A chunk plus why it was retrieved.",
+      "properties": {
+        "chunk": {
+          "$ref": "#/$defs/Chunk"
+        },
+        "rank": {
+          "minimum": 1,
+          "title": "Rank",
+          "type": "integer"
+        },
+        "score": {
+          "description": "Similarity score as returned by the retriever.",
+          "title": "Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "chunk",
+        "score",
+        "rank"
+      ],
+      "title": "RetrievedChunk",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The answer, or an explicit refusal to answer.\n\nInvariant enforced below: an abstained answer carries a reason and no\nanswer text; an answered query carries at least one citation.",
+  "properties": {
+    "abstained": {
+      "title": "Abstained",
+      "type": "boolean"
+    },
+    "abstention_message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "What the user is told, and what would be needed instead.",
+      "title": "Abstention Message"
+    },
+    "abstention_reason": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AbstentionReason"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "answer_text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "None when abstained is True.",
+      "title": "Answer Text"
+    },
+    "citations": {
+      "items": {
+        "$ref": "#/$defs/Citation"
+      },
+      "title": "Citations",
+      "type": "array"
+    },
+    "query_id": {
+      "title": "Query Id",
+      "type": "string"
+    },
+    "retrieved": {
+      "description": "Everything retrieved, including chunks not cited.",
+      "items": {
+        "$ref": "#/$defs/RetrievedChunk"
+      },
+      "title": "Retrieved",
+      "type": "array"
+    },
+    "support_score": {
+      "description": "How well the retrieved evidence supports the answer. Compared against VOLTDESK_ABSTENTION_THRESHOLD by Phase 3's scorer.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Support Score",
+      "type": "number"
+    }
+  },
+  "required": [
+    "query_id",
+    "abstained",
+    "support_score"
+  ],
+  "title": "RetrievalAnswer",
+  "type": "object"
+}

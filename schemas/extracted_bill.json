@@ -1,0 +1,709 @@
+{
+  "$defs": {
+    "DateRange": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "format": "date",
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "DateRange",
+      "type": "object"
+    },
+    "DocumentType": {
+      "description": "The kinds of inbound document VoltDesk accepts. Closed set.",
+      "enum": [
+        "electricity_bill",
+        "site_assessment",
+        "email_thread"
+      ],
+      "title": "DocumentType",
+      "type": "string"
+    },
+    "ExtractedField_DateRange_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DateRange"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it."
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[DateRange]",
+      "type": "object"
+    },
+    "ExtractedField_MoneyAUD_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MoneyAUD"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it."
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[MoneyAUD]",
+      "type": "object"
+    },
+    "ExtractedField_PhaseConfiguration_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PhaseConfiguration"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it."
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[PhaseConfiguration]",
+      "type": "object"
+    },
+    "ExtractedField_TariffType_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TariffType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it."
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[TariffType]",
+      "type": "object"
+    },
+    "ExtractedField_date_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it.",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[date]",
+      "type": "object"
+    },
+    "ExtractedField_float_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it.",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[float]",
+      "type": "object"
+    },
+    "ExtractedField_str_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it.",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[str]",
+      "type": "object"
+    },
+    "MoneyAUD": {
+      "additionalProperties": false,
+      "description": "Money is never a bare float in this system.",
+      "properties": {
+        "amount": {
+          "description": "Amount in Australian dollars.",
+          "title": "Amount",
+          "type": "number"
+        },
+        "is_gst_inclusive": {
+          "description": "Australian retail bills quote GST-inclusive; wholesale tariffs do not.",
+          "title": "Is Gst Inclusive",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "amount",
+        "is_gst_inclusive"
+      ],
+      "title": "MoneyAUD",
+      "type": "object"
+    },
+    "PhaseConfiguration": {
+      "enum": [
+        "single_phase",
+        "three_phase",
+        "unknown"
+      ],
+      "title": "PhaseConfiguration",
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Where a record came from. Attached to everything written to the CRM.",
+      "properties": {
+        "document_id": {
+          "description": "Primary key of the source row in app.documents.",
+          "title": "Document Id",
+          "type": "string"
+        },
+        "ingested_at": {
+          "format": "date-time",
+          "title": "Ingested At",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "Hash of the source bytes.",
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Sha256",
+          "type": "string"
+        },
+        "tier": {
+          "description": "'A' for real, publicly sourced material; 'B' for synthetic. See docs/DATA_SOURCES.md. Synthetic records must never be reported as real.",
+          "pattern": "^[AB]$",
+          "title": "Tier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "document_id",
+        "sha256",
+        "ingested_at",
+        "tier"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "TariffComponent": {
+      "additionalProperties": false,
+      "description": "One priced line on a bill. Bills carry several; keep them, do not average.",
+      "properties": {
+        "daily_supply_c": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtractedField_float_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Daily supply charge in cents per day, if applicable."
+        },
+        "demand_rate_c_per_kva": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtractedField_float_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Demand charge, for demand tariffs."
+        },
+        "label": {
+          "$ref": "#/$defs/ExtractedField_str_",
+          "description": "Retailer's own name for the component."
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtractedField_float_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Billed quantity for this component."
+        },
+        "rate_c_per_kwh": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtractedField_float_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Usage rate in cents per kWh, if this is a usage component."
+        }
+      },
+      "required": [
+        "label"
+      ],
+      "title": "TariffComponent",
+      "type": "object"
+    },
+    "TariffType": {
+      "description": "Retail tariff structures seen on Australian commercial bills.",
+      "enum": [
+        "flat",
+        "time_of_use",
+        "demand",
+        "unknown"
+      ],
+      "title": "TariffType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A commercial electricity bill, parsed.\n\nThe NMI is the join key to everything else in the Australian market and is the\nsingle most important field on this model; an extraction without it cannot be\nmatched to a site and must go to review regardless of its other confidences.",
+  "properties": {
+    "account_number": {
+      "$ref": "#/$defs/ExtractedField_str_",
+      "description": "Redacted before any third-party API call; see docs/GUARDRAILS.md."
+    },
+    "billing_period": {
+      "$ref": "#/$defs/ExtractedField_DateRange_"
+    },
+    "components": {
+      "description": "Every priced line item found, in bill order.",
+      "items": {
+        "$ref": "#/$defs/TariffComponent"
+      },
+      "title": "Components",
+      "type": "array"
+    },
+    "document_type": {
+      "$ref": "#/$defs/DocumentType",
+      "default": "electricity_bill"
+    },
+    "issue_date": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_date_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "nmi": {
+      "$ref": "#/$defs/ExtractedField_str_",
+      "description": "National Metering Identifier. 10 or 11 characters. TODO(verify): confirm the checksum rule against the AEMO NMI Procedure before enforcing a pattern here - Phase 2 must not invent one."
+    },
+    "page_count": {
+      "description": "Pages in the source PDF.",
+      "minimum": 1,
+      "title": "Page Count",
+      "type": "integer"
+    },
+    "parser_warnings": {
+      "description": "Non-fatal parse problems (skew, OCR fallback, ambiguous date format).",
+      "items": {
+        "type": "string"
+      },
+      "title": "Parser Warnings",
+      "type": "array"
+    },
+    "peak_demand_kva": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_float_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "phase_configuration": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_PhaseConfiguration_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "retailer_name": {
+      "$ref": "#/$defs/ExtractedField_str_"
+    },
+    "site_address": {
+      "$ref": "#/$defs/ExtractedField_str_"
+    },
+    "solar_export_kwh": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_float_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Present only when the site already has generation."
+    },
+    "tariff_code": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_str_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "tariff_type": {
+      "$ref": "#/$defs/ExtractedField_TariffType_"
+    },
+    "total_amount": {
+      "$ref": "#/$defs/ExtractedField_MoneyAUD_"
+    },
+    "total_consumption_kwh": {
+      "$ref": "#/$defs/ExtractedField_float_"
+    }
+  },
+  "required": [
+    "provenance",
+    "retailer_name",
+    "account_number",
+    "nmi",
+    "site_address",
+    "billing_period",
+    "total_amount",
+    "total_consumption_kwh",
+    "tariff_type",
+    "page_count"
+  ],
+  "title": "ExtractedBill",
+  "type": "object"
+}

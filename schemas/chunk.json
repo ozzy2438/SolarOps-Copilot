@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "CorpusSource": {
+      "description": "Provenance class of a corpus document. Tier A only - the corpus is never synthetic.",
+      "enum": [
+        "cec_approved_list",
+        "manufacturer_datasheet",
+        "dnsp_connection_guideline",
+        "regulator_methodology",
+        "rebate_program_doc",
+        "internal_standard"
+      ],
+      "title": "CorpusSource",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A retrievable unit of the corpus.",
+  "properties": {
+    "chunk_id": {
+      "title": "Chunk Id",
+      "type": "string"
+    },
+    "document_id": {
+      "title": "Document Id",
+      "type": "string"
+    },
+    "document_title": {
+      "title": "Document Title",
+      "type": "string"
+    },
+    "page": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Page"
+    },
+    "section_path": {
+      "description": "Heading breadcrumb, e.g. ['5. Inverters', '5.2 Anti-islanding'].",
+      "items": {
+        "type": "string"
+      },
+      "title": "Section Path",
+      "type": "array"
+    },
+    "source": {
+      "$ref": "#/$defs/CorpusSource"
+    },
+    "text": {
+      "minLength": 1,
+      "title": "Text",
+      "type": "string"
+    },
+    "token_count": {
+      "minimum": 1,
+      "title": "Token Count",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "chunk_id",
+    "document_id",
+    "source",
+    "document_title",
+    "text",
+    "token_count"
+  ],
+  "title": "Chunk",
+  "type": "object"
+}

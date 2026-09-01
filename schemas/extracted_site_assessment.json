@@ -1,0 +1,624 @@
+{
+  "$defs": {
+    "DocumentType": {
+      "description": "The kinds of inbound document VoltDesk accepts. Closed set.",
+      "enum": [
+        "electricity_bill",
+        "site_assessment",
+        "email_thread"
+      ],
+      "title": "DocumentType",
+      "type": "string"
+    },
+    "ExtractedField_PhaseConfiguration_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PhaseConfiguration"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it."
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[PhaseConfiguration]",
+      "type": "object"
+    },
+    "ExtractedField_RoofOrientation_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RoofOrientation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it."
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[RoofOrientation]",
+      "type": "object"
+    },
+    "ExtractedField_bool_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it.",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[bool]",
+      "type": "object"
+    },
+    "ExtractedField_date_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it.",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[date]",
+      "type": "object"
+    },
+    "ExtractedField_float_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it.",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[float]",
+      "type": "object"
+    },
+    "ExtractedField_str_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it.",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[str]",
+      "type": "object"
+    },
+    "PhaseConfiguration": {
+      "enum": [
+        "single_phase",
+        "three_phase",
+        "unknown"
+      ],
+      "title": "PhaseConfiguration",
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Where a record came from. Attached to everything written to the CRM.",
+      "properties": {
+        "document_id": {
+          "description": "Primary key of the source row in app.documents.",
+          "title": "Document Id",
+          "type": "string"
+        },
+        "ingested_at": {
+          "format": "date-time",
+          "title": "Ingested At",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "Hash of the source bytes.",
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Sha256",
+          "type": "string"
+        },
+        "tier": {
+          "description": "'A' for real, publicly sourced material; 'B' for synthetic. See docs/DATA_SOURCES.md. Synthetic records must never be reported as real.",
+          "pattern": "^[AB]$",
+          "title": "Tier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "document_id",
+        "sha256",
+        "ingested_at",
+        "tier"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "RoofOrientation": {
+      "enum": [
+        "N",
+        "NE",
+        "E",
+        "SE",
+        "S",
+        "SW",
+        "W",
+        "NW",
+        "flat",
+        "mixed"
+      ],
+      "title": "RoofOrientation",
+      "type": "string"
+    },
+    "RoofPlane": {
+      "additionalProperties": false,
+      "description": "One usable roof plane. A commercial site typically has several.",
+      "properties": {
+        "orientation": {
+          "$ref": "#/$defs/ExtractedField_RoofOrientation_"
+        },
+        "shading_notes": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtractedField_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tilt_degrees": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtractedField_float_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "0 = flat, 90 = vertical."
+        },
+        "usable_area_m2": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExtractedField_float_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "orientation"
+      ],
+      "title": "RoofPlane",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "An installer's site visit notes, parsed. Often handwritten and photographed.",
+  "properties": {
+    "access_constraints": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_str_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "assessed_on": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_date_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "assessor_name": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_str_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Staff name. Redacted before third-party calls."
+    },
+    "battery_space_available": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_bool_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "document_type": {
+      "$ref": "#/$defs/DocumentType",
+      "default": "site_assessment"
+    },
+    "existing_pv_kw": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_float_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "hazards": {
+      "description": "Asbestos, height, live parts, restricted access.",
+      "items": {
+        "$ref": "#/$defs/ExtractedField_str_"
+      },
+      "title": "Hazards",
+      "type": "array"
+    },
+    "main_switch_rating_a": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_float_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "nmi": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_str_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "parser_warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Parser Warnings",
+      "type": "array"
+    },
+    "phase_configuration": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_PhaseConfiguration_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "roof_material": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_str_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "roof_planes": {
+      "items": {
+        "$ref": "#/$defs/RoofPlane"
+      },
+      "title": "Roof Planes",
+      "type": "array"
+    },
+    "site_address": {
+      "$ref": "#/$defs/ExtractedField_str_"
+    },
+    "switchboard_notes": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_str_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "provenance",
+    "site_address"
+  ],
+  "title": "ExtractedSiteAssessment",
+  "type": "object"
+}

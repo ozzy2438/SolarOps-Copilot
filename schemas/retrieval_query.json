@@ -1,0 +1,65 @@
+{
+  "$defs": {
+    "CorpusSource": {
+      "description": "Provenance class of a corpus document. Tier A only - the corpus is never synthetic.",
+      "enum": [
+        "cec_approved_list",
+        "manufacturer_datasheet",
+        "dnsp_connection_guideline",
+        "regulator_methodology",
+        "rebate_program_doc",
+        "internal_standard"
+      ],
+      "title": "CorpusSource",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A question put to the knowledge capability.",
+  "properties": {
+    "asked_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Staff identifier for the audit log. Never sent to a provider.",
+      "title": "Asked By"
+    },
+    "query_id": {
+      "title": "Query Id",
+      "type": "string"
+    },
+    "question": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Question",
+      "type": "string"
+    },
+    "source_filter": {
+      "description": "Empty means no filter.",
+      "items": {
+        "$ref": "#/$defs/CorpusSource"
+      },
+      "title": "Source Filter",
+      "type": "array"
+    },
+    "top_k": {
+      "default": 8,
+      "maximum": 50,
+      "minimum": 1,
+      "title": "Top K",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "query_id",
+    "question"
+  ],
+  "title": "RetrievalQuery",
+  "type": "object"
+}

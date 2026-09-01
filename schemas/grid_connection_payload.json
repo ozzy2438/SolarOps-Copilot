@@ -1,0 +1,90 @@
+{
+  "additionalProperties": false,
+  "description": "EspoCRM custom entity `GridConnection`.",
+  "properties": {
+    "applicationReference": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Applicationreference"
+    },
+    "connectionStatus": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Connectionstatus"
+    },
+    "dnspName": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Distribution network service provider. TODO(verify): NMI-to-DNSP mapping is published per jurisdiction; Phase 3 must source it rather than infer it from the postcode.",
+      "title": "Dnspname"
+    },
+    "exportLimitKw": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Exportlimitkw"
+    },
+    "external_key": {
+      "description": "Value written to the CRM's voltdeskExternalKey field. Unique per entity.",
+      "minLength": 1,
+      "title": "External Key",
+      "type": "string"
+    },
+    "extraction_confidence": {
+      "description": "Minimum confidence across the fields that populated this.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Extraction Confidence",
+      "type": "number"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "nmi": {
+      "title": "Nmi",
+      "type": "string"
+    },
+    "source_document_id": {
+      "description": "app.documents.id of the document behind this.",
+      "title": "Source Document Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "external_key",
+    "source_document_id",
+    "extraction_confidence",
+    "name",
+    "nmi"
+  ],
+  "title": "GridConnectionPayload",
+  "type": "object"
+}

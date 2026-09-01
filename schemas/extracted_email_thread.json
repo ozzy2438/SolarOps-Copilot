@@ -1,0 +1,481 @@
+{
+  "$defs": {
+    "DocumentType": {
+      "description": "The kinds of inbound document VoltDesk accepts. Closed set.",
+      "enum": [
+        "electricity_bill",
+        "site_assessment",
+        "email_thread"
+      ],
+      "title": "DocumentType",
+      "type": "string"
+    },
+    "EmailIntent": {
+      "enum": [
+        "new_enquiry",
+        "quote_request",
+        "technical_question",
+        "scheduling",
+        "complaint",
+        "other"
+      ],
+      "title": "EmailIntent",
+      "type": "string"
+    },
+    "ExtractedField_EmailIntent_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EmailIntent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it."
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[EmailIntent]",
+      "type": "object"
+    },
+    "ExtractedField_date_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it.",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[date]",
+      "type": "object"
+    },
+    "ExtractedField_datetime_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it.",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[datetime]",
+      "type": "object"
+    },
+    "ExtractedField_float_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it.",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[float]",
+      "type": "object"
+    },
+    "ExtractedField_str_": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "description": "Model-reported confidence, recalibrated by Phase 2's scorer. 0.0 means 'absent from the document', not 'uncertain'.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "1-indexed page the quote came from, for PDFs.",
+          "title": "Source Page"
+        },
+        "source_quote": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim span from the source document supporting the value. Required whenever value is not None; enforced by Phase 2's validator, not here, because the generic wrapper cannot see whether T is nullable.",
+          "title": "Source Quote"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The extracted value, or None when the document does not state it.",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "confidence"
+      ],
+      "title": "ExtractedField[str]",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Where a record came from. Attached to everything written to the CRM.",
+      "properties": {
+        "document_id": {
+          "description": "Primary key of the source row in app.documents.",
+          "title": "Document Id",
+          "type": "string"
+        },
+        "ingested_at": {
+          "format": "date-time",
+          "title": "Ingested At",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "Hash of the source bytes.",
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Sha256",
+          "type": "string"
+        },
+        "tier": {
+          "description": "'A' for real, publicly sourced material; 'B' for synthetic. See docs/DATA_SOURCES.md. Synthetic records must never be reported as real.",
+          "pattern": "^[AB]$",
+          "title": "Tier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "document_id",
+        "sha256",
+        "ingested_at",
+        "tier"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "An inbound email thread, reduced to the facts the CRM cares about.",
+  "properties": {
+    "company_name": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_str_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "deadline": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_date_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "document_type": {
+      "$ref": "#/$defs/DocumentType",
+      "default": "email_thread"
+    },
+    "first_message_at": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_datetime_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "intent": {
+      "$ref": "#/$defs/ExtractedField_EmailIntent_"
+    },
+    "last_message_at": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_datetime_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "message_count": {
+      "minimum": 1,
+      "title": "Message Count",
+      "type": "integer"
+    },
+    "parser_warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Parser Warnings",
+      "type": "array"
+    },
+    "participant_emails": {
+      "description": "Redacted before third-party calls.",
+      "items": {
+        "$ref": "#/$defs/ExtractedField_str_"
+      },
+      "title": "Participant Emails",
+      "type": "array"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "requested_battery_kwh": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_float_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "requested_system_kw": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_float_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "site_address": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExtractedField_str_"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "summary": {
+      "$ref": "#/$defs/ExtractedField_str_",
+      "description": "Two sentences at most, for the CRM note."
+    },
+    "thread_subject": {
+      "$ref": "#/$defs/ExtractedField_str_"
+    }
+  },
+  "required": [
+    "provenance",
+    "thread_subject",
+    "message_count",
+    "intent",
+    "summary"
+  ],
+  "title": "ExtractedEmailThread",
+  "type": "object"
+}

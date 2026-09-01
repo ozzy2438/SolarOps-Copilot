@@ -1,0 +1,280 @@
+{
+  "$defs": {
+    "CallOutcome": {
+      "enum": [
+        "success",
+        "schema_invalid",
+        "provider_error",
+        "timeout",
+        "refusal",
+        "circuit_open"
+      ],
+      "title": "CallOutcome",
+      "type": "string"
+    },
+    "ModelChoice": {
+      "additionalProperties": false,
+      "description": "A concrete, callable model identity.",
+      "properties": {
+        "model_id": {
+          "description": "Exact provider model string, no date suffix invented by us. Anthropic IDs are listed in voltdesk/llm/pricing.py; OpenAI IDs carry a TODO(verify) there because they were not verified in Phase 1.",
+          "title": "Model Id",
+          "type": "string"
+        },
+        "provider": {
+          "$ref": "#/$defs/Provider"
+        }
+      },
+      "required": [
+        "provider",
+        "model_id"
+      ],
+      "title": "ModelChoice",
+      "type": "object"
+    },
+    "Provider": {
+      "enum": [
+        "anthropic",
+        "openai"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "RoutingDecision": {
+      "additionalProperties": false,
+      "description": "The record of one routing choice.",
+      "properties": {
+        "chosen": {
+          "$ref": "#/$defs/ModelChoice"
+        },
+        "considered": {
+          "description": "Candidates that were available but not chosen.",
+          "items": {
+            "$ref": "#/$defs/ModelChoice"
+          },
+          "title": "Considered",
+          "type": "array"
+        },
+        "estimated_input_tokens": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Estimated Input Tokens"
+        },
+        "fallback_of": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelChoice"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Set when this decision replaced a failed call."
+        },
+        "rationale": {
+          "description": "One sentence, human-readable. Written for whoever reads the audit log.",
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "strategy": {
+          "$ref": "#/$defs/RoutingStrategy"
+        },
+        "task_type": {
+          "$ref": "#/$defs/TaskType"
+        }
+      },
+      "required": [
+        "task_type",
+        "chosen",
+        "strategy",
+        "rationale"
+      ],
+      "title": "RoutingDecision",
+      "type": "object"
+    },
+    "RoutingStrategy": {
+      "description": "How the choice was made. Phase 4 may add members, never remove them.",
+      "enum": [
+        "static_default",
+        "task_table",
+        "cost_optimised",
+        "fallback_after_error",
+        "forced_by_caller"
+      ],
+      "title": "RoutingStrategy",
+      "type": "string"
+    },
+    "TaskType": {
+      "description": "Unit of work the router routes and the evaluator measures, one per row.",
+      "enum": [
+        "bill_extraction",
+        "site_assessment_extraction",
+        "email_extraction",
+        "knowledge_qa",
+        "schema_repair"
+      ],
+      "title": "TaskType",
+      "type": "string"
+    },
+    "TokenUsage": {
+      "additionalProperties": false,
+      "description": "Token counts as reported by the provider, never estimated by us.\n\nAnthropic reports these on `response.usage`; OpenAI reports `prompt_tokens` /\n`completion_tokens`. The provider adapters normalise into this shape.",
+      "properties": {
+        "cache_creation_input_tokens": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Cache Creation Input Tokens",
+          "type": "integer"
+        },
+        "cache_read_input_tokens": {
+          "default": 0,
+          "description": "Anthropic prompt caching; 0 when not applicable.",
+          "minimum": 0,
+          "title": "Cache Read Input Tokens",
+          "type": "integer"
+        },
+        "input_tokens": {
+          "minimum": 0,
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "output_tokens": {
+          "minimum": 0,
+          "title": "Output Tokens",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "input_tokens",
+        "output_tokens"
+      ],
+      "title": "TokenUsage",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Everything that must be knowable about a single model call after the fact.",
+  "properties": {
+    "call_id": {
+      "description": "UUID4, generated before the call is made.",
+      "title": "Call Id",
+      "type": "string"
+    },
+    "cost_usd": {
+      "description": "Computed from voltdesk/llm/pricing.py at call time, not at read time.",
+      "minimum": 0.0,
+      "title": "Cost Usd",
+      "type": "number"
+    },
+    "document_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Set for extraction tasks.",
+      "title": "Document Id"
+    },
+    "error_message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error Message"
+    },
+    "latency_ms": {
+      "minimum": 0,
+      "title": "Latency Ms",
+      "type": "integer"
+    },
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    },
+    "outcome": {
+      "$ref": "#/$defs/CallOutcome"
+    },
+    "prompt_version_hash": {
+      "description": "SHA-256 of the rendered prompt template (not the filled-in prompt). Makes 'which prompt produced this' answerable after a prompt edit.",
+      "maxLength": 64,
+      "minLength": 64,
+      "title": "Prompt Version Hash",
+      "type": "string"
+    },
+    "query_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Set for Q&A tasks.",
+      "title": "Query Id"
+    },
+    "redacted_entity_counts": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "description": "Entity type -> count redacted, e.g. {'EMAIL': 2}.",
+      "title": "Redacted Entity Counts",
+      "type": "object"
+    },
+    "redaction_applied": {
+      "description": "True when the PII redactor modified the payload before it left the trust boundary. False here with PII in the payload is an incident.",
+      "title": "Redaction Applied",
+      "type": "boolean"
+    },
+    "retry_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Retry Count",
+      "type": "integer"
+    },
+    "routing": {
+      "$ref": "#/$defs/RoutingDecision"
+    },
+    "task_type": {
+      "$ref": "#/$defs/TaskType"
+    },
+    "usage": {
+      "$ref": "#/$defs/TokenUsage"
+    }
+  },
+  "required": [
+    "call_id",
+    "occurred_at",
+    "task_type",
+    "routing",
+    "prompt_version_hash",
+    "usage",
+    "cost_usd",
+    "latency_ms",
+    "outcome",
+    "redaction_applied"
+  ],
+  "title": "AuditRecord",
+  "type": "object"
+}

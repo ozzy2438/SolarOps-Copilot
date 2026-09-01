@@ -1,0 +1,326 @@
+{
+  "$defs": {
+    "FieldScore": {
+      "additionalProperties": false,
+      "description": "Per-field outcome for one record, the unit precision and recall are computed over.",
+      "properties": {
+        "actual": {
+          "title": "Actual"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "correct": {
+          "title": "Correct",
+          "type": "boolean"
+        },
+        "expected": {
+          "title": "Expected"
+        },
+        "expected_present": {
+          "description": "Does ground truth have a value?",
+          "title": "Expected Present",
+          "type": "boolean"
+        },
+        "field_path": {
+          "title": "Field Path",
+          "type": "string"
+        },
+        "predicted_present": {
+          "description": "Did the model produce a non-null value?",
+          "title": "Predicted Present",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "field_path",
+        "expected",
+        "actual",
+        "correct",
+        "predicted_present",
+        "expected_present"
+      ],
+      "title": "FieldScore",
+      "type": "object"
+    },
+    "ModelChoice": {
+      "additionalProperties": false,
+      "description": "A concrete, callable model identity.",
+      "properties": {
+        "model_id": {
+          "description": "Exact provider model string, no date suffix invented by us. Anthropic IDs are listed in voltdesk/llm/pricing.py; OpenAI IDs carry a TODO(verify) there because they were not verified in Phase 1.",
+          "title": "Model Id",
+          "type": "string"
+        },
+        "provider": {
+          "$ref": "#/$defs/Provider"
+        }
+      },
+      "required": [
+        "provider",
+        "model_id"
+      ],
+      "title": "ModelChoice",
+      "type": "object"
+    },
+    "Provider": {
+      "enum": [
+        "anthropic",
+        "openai"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "RecordResult": {
+      "additionalProperties": false,
+      "description": "What happened when one golden record was run against one model.",
+      "properties": {
+        "abstained": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "QA tasks only.",
+          "title": "Abstained"
+        },
+        "citations_correct": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "QA tasks only.",
+          "title": "Citations Correct"
+        },
+        "cost_usd": {
+          "minimum": 0.0,
+          "title": "Cost Usd",
+          "type": "number"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error"
+        },
+        "exact_match": {
+          "description": "Every field correct.",
+          "title": "Exact Match",
+          "type": "boolean"
+        },
+        "field_scores": {
+          "items": {
+            "$ref": "#/$defs/FieldScore"
+          },
+          "title": "Field Scores",
+          "type": "array"
+        },
+        "latency_ms": {
+          "minimum": 0,
+          "title": "Latency Ms",
+          "type": "integer"
+        },
+        "model": {
+          "$ref": "#/$defs/ModelChoice"
+        },
+        "record_id": {
+          "title": "Record Id",
+          "type": "string"
+        },
+        "task_type": {
+          "$ref": "#/$defs/TaskType"
+        }
+      },
+      "required": [
+        "record_id",
+        "task_type",
+        "model",
+        "exact_match",
+        "latency_ms",
+        "cost_usd"
+      ],
+      "title": "RecordResult",
+      "type": "object"
+    },
+    "TaskType": {
+      "description": "Unit of work the router routes and the evaluator measures, one per row.",
+      "enum": [
+        "bill_extraction",
+        "site_assessment_extraction",
+        "email_extraction",
+        "knowledge_qa",
+        "schema_repair"
+      ],
+      "title": "TaskType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One complete run of the golden set against one model configuration.",
+  "properties": {
+    "abstention_precision": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Abstention Precision"
+    },
+    "abstention_recall": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Abstention Recall"
+    },
+    "citation_correctness": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Citation Correctness"
+    },
+    "cost_per_document_usd": {
+      "minimum": 0.0,
+      "title": "Cost Per Document Usd",
+      "type": "number"
+    },
+    "exact_match_rate": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Exact Match Rate",
+      "type": "number"
+    },
+    "field_precision": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Field Precision",
+      "type": "number"
+    },
+    "field_recall": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Field Recall",
+      "type": "number"
+    },
+    "finished_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Finished At"
+    },
+    "git_sha": {
+      "description": "Commit the run was executed at.",
+      "title": "Git Sha",
+      "type": "string"
+    },
+    "model": {
+      "$ref": "#/$defs/ModelChoice"
+    },
+    "p50_latency_ms": {
+      "minimum": 0,
+      "title": "P50 Latency Ms",
+      "type": "integer"
+    },
+    "p95_latency_ms": {
+      "minimum": 0,
+      "title": "P95 Latency Ms",
+      "type": "integer"
+    },
+    "record_count": {
+      "minimum": 0,
+      "title": "Record Count",
+      "type": "integer"
+    },
+    "results": {
+      "items": {
+        "$ref": "#/$defs/RecordResult"
+      },
+      "title": "Results",
+      "type": "array"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "started_at": {
+      "format": "date-time",
+      "title": "Started At",
+      "type": "string"
+    },
+    "total_cost_usd": {
+      "minimum": 0.0,
+      "title": "Total Cost Usd",
+      "type": "number"
+    }
+  },
+  "required": [
+    "run_id",
+    "started_at",
+    "model",
+    "git_sha",
+    "record_count",
+    "exact_match_rate",
+    "field_precision",
+    "field_recall",
+    "p50_latency_ms",
+    "p95_latency_ms",
+    "total_cost_usd",
+    "cost_per_document_usd"
+  ],
+  "title": "EvaluationResult",
+  "type": "object"
+}

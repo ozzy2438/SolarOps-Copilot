@@ -1,0 +1,116 @@
+{
+  "additionalProperties": false,
+  "description": "EspoCRM custom entity `EnergyProfile`. One per bill, per site.",
+  "properties": {
+    "billingPeriodEnd": {
+      "format": "date",
+      "title": "Billingperiodend",
+      "type": "string"
+    },
+    "billingPeriodStart": {
+      "format": "date",
+      "title": "Billingperiodstart",
+      "type": "string"
+    },
+    "external_key": {
+      "description": "Value written to the CRM's voltdeskExternalKey field. Unique per entity.",
+      "minLength": 1,
+      "title": "External Key",
+      "type": "string"
+    },
+    "extraction_confidence": {
+      "description": "Minimum confidence across the fields that populated this.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Extraction Confidence",
+      "type": "number"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "nmi": {
+      "title": "Nmi",
+      "type": "string"
+    },
+    "peakDemandKva": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Peakdemandkva"
+    },
+    "retailerName": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Retailername"
+    },
+    "solarExportKwh": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Solarexportkwh"
+    },
+    "source_document_id": {
+      "description": "app.documents.id of the document behind this.",
+      "title": "Source Document Id",
+      "type": "string"
+    },
+    "tariffCode": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tariffcode"
+    },
+    "tariffType": {
+      "title": "Tarifftype",
+      "type": "string"
+    },
+    "totalAmountAud": {
+      "title": "Totalamountaud",
+      "type": "number"
+    },
+    "totalConsumptionKwh": {
+      "title": "Totalconsumptionkwh",
+      "type": "number"
+    }
+  },
+  "required": [
+    "external_key",
+    "source_document_id",
+    "extraction_confidence",
+    "name",
+    "nmi",
+    "billingPeriodStart",
+    "billingPeriodEnd",
+    "totalConsumptionKwh",
+    "totalAmountAud",
+    "tariffType"
+  ],
+  "title": "EnergyProfilePayload",
+  "type": "object"
+}
