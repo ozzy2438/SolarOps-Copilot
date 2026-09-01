@@ -194,7 +194,7 @@ def ingest_path(
         return 0
     selected_id = document_id or f"corpus-{digest[:20]}"
     parsed = _parse_tier_a(corpus_path, selected_id, digest)
-    chunks = chunk_document(parsed)
+    chunks = chunk_document(parsed, source=source, document_title=document_title)
     if embedder is None:
         from voltdesk.ingestion.embeddings import default_embedder
 

@@ -26,9 +26,9 @@ def _query() -> RetrievalQuery:
     return RetrievalQuery(query_id="q1", question="What is the export limit?")
 
 
-def test_chunking_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        chunk_document(None)  # type: ignore[arg-type]
+def test_chunking_rejects_invalid_target_size() -> None:
+    with pytest.raises(ValueError, match="positive"):
+        chunk_document(None, target_tokens=0)  # type: ignore[arg-type]
 
 
 def test_embedding_storage_records_model_and_dimension() -> None:
@@ -87,7 +87,9 @@ def test_corpus_ingestion_is_licence_gated_and_idempotent(
         section_path=["1. Eligibility"],
         token_count=2,
     )
-    monkeypatch.setattr("voltdesk.ingestion.corpus.chunk_document", lambda _doc: [chunk])
+    monkeypatch.setattr(
+        "voltdesk.ingestion.corpus.chunk_document", lambda _doc, **_kwargs: [chunk]
+    )
 
     with pytest.raises(ValueError, match="verified licence"):
         ingest_path(str(path), CorpusSource.REGULATOR_METHODOLOGY, "Title")
