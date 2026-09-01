@@ -1,0 +1,31 @@
+{
+  "documents": [
+    {
+      "path": "cer_create_stcs.md",
+      "document_id": "cer-create-stcs-2026-09-01",
+      "title": "Create small-scale technology certificates",
+      "source": "regulator_methodology",
+      "source_url": "https://cer.gov.au/schemes/renewable-energy-target/small-scale-renewable-energy-scheme/small-scale-technology-certificates/create-small-scale-technology-certificates",
+      "licence": "CC BY 4.0; adapted from Clean Energy Regulator material; excludes logos, the Coat of Arms and third-party content",
+      "retrieved_at": "2026-09-01T00:00:00+10:00"
+    },
+    {
+      "path": "energy_gov_au_cheaper_home_batteries.md",
+      "document_id": "energy-gov-au-cheaper-home-batteries-2026-09-01",
+      "title": "Cheaper Home Batteries Program",
+      "source": "rebate_program_doc",
+      "source_url": "https://www.energy.gov.au/rebates/cheaper-home-batteries-program",
+      "licence": "CC BY 4.0; adapted from Commonwealth of Australia material; excludes the Coat of Arms and third-party content",
+      "retrieved_at": "2026-09-01T00:00:00+10:00"
+    },
+    {
+      "path": "solar_victoria_rebate_requirements.md",
+      "document_id": "solar-victoria-rebate-requirements-2026-09-01",
+      "title": "Notice to Market 2026-27 - solar PV rebate requirements",
+      "source": "rebate_program_doc",
+      "source_url": "https://www.solar.vic.gov.au/notice-to-market-2026-27/section-3-requirements-solar-pv-rebates",
+      "licence": "CC BY 4.0; adapted from State of Victoria material; excludes images, branding, government arms and third-party content",
+      "retrieved_at": "2026-09-01T00:00:00+10:00"
+    }
+  ]
+}
