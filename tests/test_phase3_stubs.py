@@ -7,7 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from voltdesk.contracts.retrieval import Chunk, CorpusSource, RetrievalQuery
+from voltdesk.contracts.retrieval import (
+    AbstentionReason,
+    Chunk,
+    CorpusSource,
+    RetrievalQuery,
+)
 from voltdesk.ingestion.chunking import chunk_document
 from voltdesk.ingestion.corpus import (
     CorpusDocumentRecord,
@@ -147,8 +152,10 @@ def test_abstained_answer_has_no_verifiable_citations() -> None:
     assert verify_citations(synthesise(_query(), []), []) is False
 
 
-def test_abstention_scoring_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        support_score(_query(), [])
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        abstention_reason(_query(), [], 0.1)
+def test_empty_retrieval_has_zero_support() -> None:
+    assert support_score(_query(), []) == 0.0
+
+
+def test_non_domain_question_is_out_of_scope() -> None:
+    query = RetrievalQuery(query_id="q2", question="How do I bake bread?")
+    assert abstention_reason(query, [], 0.0) == AbstentionReason.OUT_OF_SCOPE
