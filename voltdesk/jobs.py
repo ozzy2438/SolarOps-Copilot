@@ -6,6 +6,7 @@ the HTTP request must not wait for a model.
 
 from __future__ import annotations
 
+from voltdesk.contracts.common import DocumentType
 from voltdesk.contracts.review import FieldForReview
 from voltdesk.crm.writer import CrmWriter
 from voltdesk.extraction.confidence import calibrate, min_confidence
@@ -39,21 +40,20 @@ def process_document(document_id: str) -> None:
     try:
         extraction = Extractor().extract(parsed)
     except ExtractionFailed as exc:
-        update_document_status(document_id, "failed", error=str(exc))
-        ReviewQueue().enqueue(
-            new_review_item(
-                document_id=document_id,
-                document_type=record.document_type,
-                fields=[
-                    FieldForReview(
-                        field_path="_document",
-                        proposed_value=None,
-                        confidence=0.0,
-                        reason="Schema validation failed after one repair attempt.",
-                    )
-                ],
-                blocking=True,
-            )
+        _fail_for_review(
+            document_id,
+            record.document_type,
+            error=str(exc),
+            reason="Schema validation failed after one repair attempt.",
+        )
+        return
+    except Exception as exc:  # noqa: BLE001 - job boundary: never leave status=extracting
+        logger.exception("extraction_failed", document_id=document_id)
+        _fail_for_review(
+            document_id,
+            record.document_type,
+            error=str(exc),
+            reason="Extraction raised before a validated record existed.",
         )
         return
 
@@ -66,7 +66,17 @@ def process_document(document_id: str) -> None:
         prompt_version_hash="0" * 64,
     )
     update_document_status(document_id, "extracted")
-    outcome = CrmWriter().write(calibrated, parsed)
+    try:
+        outcome = CrmWriter().write(calibrated, parsed)
+    except Exception as exc:  # noqa: BLE001 - job boundary
+        logger.exception("crm_write_failed", document_id=document_id)
+        _fail_for_review(
+            document_id,
+            record.document_type,
+            error=str(exc),
+            reason="CRM write failed after a validated extraction.",
+        )
+        return
     if outcome.review_fields:
         ReviewQueue().enqueue(
             new_review_item(
@@ -86,6 +96,31 @@ def process_document(document_id: str) -> None:
         document_id=document_id,
         written=outcome.written,
         blocking=outcome.blocking,
+    )
+
+
+def _fail_for_review(
+    document_id: str,
+    document_type: DocumentType,
+    *,
+    error: str,
+    reason: str,
+) -> None:
+    update_document_status(document_id, "failed", error=error)
+    ReviewQueue().enqueue(
+        new_review_item(
+            document_id=document_id,
+            document_type=document_type,
+            fields=[
+                FieldForReview(
+                    field_path="_document",
+                    proposed_value=None,
+                    confidence=0.0,
+                    reason=reason,
+                )
+            ],
+            blocking=True,
+        )
     )
 
 
