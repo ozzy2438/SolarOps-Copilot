@@ -44,12 +44,12 @@ def test_prompts_are_not_implemented() -> None:
 
 
 def test_confidence_scoring_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        verify_quote("q", None)  # type: ignore[arg-type]
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        calibrate(None, None)  # type: ignore[arg-type]
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        classify_for_write("nmi", 0.9)
+    from helpers_phase2 import DOCUMENT_TEXT, parsed_bill
+
+    document = parsed_bill(DOCUMENT_TEXT)
+    assert verify_quote("NMI 6305888444", document) is True
+    assert classify_for_write("nmi", 0.9) == "auto_write"
+    assert callable(calibrate)
 
 
 def test_review_queue_is_not_implemented() -> None:
