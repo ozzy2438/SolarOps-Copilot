@@ -28,6 +28,10 @@ dependencies = [
     "pdfplumber>=0.11,<1",
     "pillow>=10,<12",
     "reportlab>=4.0,<5",
+    # NumPy 2.5 type stubs require Python 3.12; VoltDesk supports Python 3.11.
+    "numpy>=1.26,<2",
+    "scipy>=1.10,<1.18",
+    "sentence-transformers>=5.1,<6",
 ]
 
 [project.optional-dependencies]

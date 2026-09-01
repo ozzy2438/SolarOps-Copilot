@@ -14,7 +14,12 @@ from voltdesk.ingestion.corpus import (
     InMemoryCorpusStore,
     ingest_path,
 )
-from voltdesk.ingestion.embeddings import Embedder, store_chunks
+from voltdesk.ingestion.embeddings import (
+    Embedder,
+    SentenceTransformerEmbedder,
+    default_embedder,
+    store_chunks,
+)
 from voltdesk.retrieval.abstention import abstention_reason, support_score
 from voltdesk.retrieval.search import retrieve
 from voltdesk.retrieval.synthesis import synthesise, verify_citations
@@ -62,6 +67,14 @@ def test_embedding_storage_records_model_and_dimension() -> None:
     assert store_chunks([chunk], _Embedder(), document=document, store=store) == 1
     assert store.embedding_model_id == "test-embedding"
     assert store.dimension == 2
+
+
+def test_default_embedding_model_is_pinned_and_384_dimensional() -> None:
+    embedder = default_embedder()
+
+    assert isinstance(embedder, SentenceTransformerEmbedder)
+    assert embedder.dimension == 384
+    assert embedder.model_id.endswith("@1110a243fdf4706b3f48f1d95db1a4f5529b4d41")
 
 
 def test_corpus_ingestion_is_licence_gated_and_idempotent(

@@ -114,6 +114,16 @@ class InMemoryCorpusStore:
 _PROCESS_STORE = InMemoryCorpusStore()
 
 
+def _default_store() -> CorpusStore:
+    from voltdesk.config import get_settings
+
+    if "not-configured" in get_settings().database_url:
+        return _PROCESS_STORE
+    from voltdesk.ingestion.embeddings import PostgresCorpusStore
+
+    return PostgresCorpusStore()
+
+
 def licence_is_verified(licence: str | None) -> bool:
     """A missing or explicitly unresolved licence can never pass the ingest gate."""
     if licence is None or not licence.strip():
@@ -189,7 +199,7 @@ def ingest_path(
     corpus_path = Path(path).resolve()
     content = corpus_path.read_bytes()
     digest = hashlib.sha256(content).hexdigest()
-    selected_store = store or _PROCESS_STORE
+    selected_store = store or _default_store()
     if selected_store.contains_sha256(digest):
         return 0
     selected_id = document_id or f"corpus-{digest[:20]}"
