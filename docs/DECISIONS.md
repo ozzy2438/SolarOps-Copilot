@@ -256,3 +256,25 @@ and refuses to reinterpret a non-empty 1536-dimensional corpus.
 Changing the model or revision requires another ADR, a dimension-compatible migration
 when necessary, and explicit full-corpus re-embedding. A process cannot silently mix
 models or dimensions in one corpus.
+
+---
+
+## ADR-0016: Run pinned MiniLM as a CPU-only ONNX artifact
+
+**Context.** ADR-0015 selected the MiniLM network and 384-dimensional contract. Its
+first `sentence-transformers` implementation pulled GPU/CUDA runtime packages into the
+Linux service image even though VoltDesk runs embedding inference on CPU. That made the
+otherwise small service image unnecessarily large and made Compose acceptance costly.
+
+**Decision.** Preserve the same `all-MiniLM-L6-v2` network, Apache-2.0 licence, input
+limit and 384-dimensional normalized output, but execute Qdrant's official ONNX port
+with FastEmbed's CPU execution provider. Pin the ONNX artifact repository revision to
+`Qdrant/all-MiniLM-L6-v2-onnx@5f1b8cd78bc4fb444dd171e59b18f3a3af89a079`
+and store that exact runtime artifact identity with every vector. This supersedes only
+ADR-0015's stored repository identity and runtime implementation; the selected model
+and migration dimension do not change.
+
+**Consequences.** The service no longer installs PyTorch or CUDA. The model remains a
+lazy local download and no corpus text is sent to an inference provider. Any future
+ONNX artifact change still requires an ADR and full-corpus re-embedding, even when its
+dimension remains 384.

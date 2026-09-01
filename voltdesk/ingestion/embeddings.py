@@ -35,12 +35,13 @@ class Embedder(ABC):
         raise NotImplementedError
 
 
-class SentenceTransformerEmbedder(Embedder):
-    """Lazy, local embedder pinned to the revision recorded by ADR-0015."""
+class MiniLMEmbedder(Embedder):
+    """Lazy, local ONNX embedder pinned to the artifact in ADR-0016."""
 
     model_name = "sentence-transformers/all-MiniLM-L6-v2"
-    model_revision = "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
-    model_id = f"{model_name}@{model_revision}"
+    artifact_repo = "Qdrant/all-MiniLM-L6-v2-onnx"
+    artifact_revision = "5f1b8cd78bc4fb444dd171e59b18f3a3af89a079"
+    model_id = f"{artifact_repo}@{artifact_revision}"
     dimension = 384
 
     def __init__(self) -> None:
@@ -50,17 +51,21 @@ class SentenceTransformerEmbedder(Embedder):
         if not texts:
             return []
         if self._model is None:
-            from sentence_transformers import SentenceTransformer
+            from fastembed import TextEmbedding
+            from huggingface_hub import snapshot_download
 
-            self._model = SentenceTransformer(
-                self.model_name,
-                revision=self.model_revision,
-                trust_remote_code=False,
+            model_path = snapshot_download(
+                repo_id=self.artifact_repo,
+                revision=self.artifact_revision,
             )
-        encoded = self._model.encode(
+            self._model = TextEmbedding(
+                model_name=self.model_name,
+                specific_model_path=model_path,
+                providers=["CPUExecutionProvider"],
+            )
+        encoded = self._model.embed(
             texts,
-            normalize_embeddings=True,
-            show_progress_bar=False,
+            batch_size=64,
         )
         return [[float(value) for value in vector] for vector in encoded]
 
@@ -186,4 +191,4 @@ def store_chunks(
 
 def default_embedder() -> Embedder:
     """Construct the immutable, ADR-selected local embedding model."""
-    return SentenceTransformerEmbedder()
+    return MiniLMEmbedder()

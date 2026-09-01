@@ -21,7 +21,7 @@ from voltdesk.ingestion.corpus import (
 )
 from voltdesk.ingestion.embeddings import (
     Embedder,
-    SentenceTransformerEmbedder,
+    MiniLMEmbedder,
     default_embedder,
     store_chunks,
 )
@@ -77,9 +77,9 @@ def test_embedding_storage_records_model_and_dimension() -> None:
 def test_default_embedding_model_is_pinned_and_384_dimensional() -> None:
     embedder = default_embedder()
 
-    assert isinstance(embedder, SentenceTransformerEmbedder)
+    assert isinstance(embedder, MiniLMEmbedder)
     assert embedder.dimension == 384
-    assert embedder.model_id.endswith("@1110a243fdf4706b3f48f1d95db1a4f5529b4d41")
+    assert embedder.model_id.endswith("@5f1b8cd78bc4fb444dd171e59b18f3a3af89a079")
 
 
 def test_corpus_ingestion_is_licence_gated_and_idempotent(
