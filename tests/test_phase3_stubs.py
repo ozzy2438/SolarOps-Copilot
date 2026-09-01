@@ -136,11 +136,15 @@ def test_retrieval_fuses_lexical_and_vector_candidates() -> None:
     assert result[0].score == 1.0
 
 
-def test_synthesis_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        synthesise(_query(), [])
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        verify_citations(None, [])  # type: ignore[arg-type]
+def test_empty_synthesis_abstains_without_a_citation() -> None:
+    answer = synthesise(_query(), [])
+
+    assert answer.abstained is True
+    assert answer.citations == []
+
+
+def test_abstained_answer_has_no_verifiable_citations() -> None:
+    assert verify_citations(synthesise(_query(), []), []) is False
 
 
 def test_abstention_scoring_is_not_implemented() -> None:
