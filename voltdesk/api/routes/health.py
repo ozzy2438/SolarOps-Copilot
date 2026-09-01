@@ -82,15 +82,11 @@ def ready(response: Response) -> dict[str, Any]:
         ),
     }
 
-    # A dependency nobody has configured yet is not an outage. VoltDesk ships with no
-    # EspoCRM API key and no provider keys - an EspoCRM API user has to be created by
-    # hand - and reporting a fresh, correct install as 503 trains people to ignore this
-    # endpoint. Unconfigured dependencies are reported in full and listed separately,
-    # but they do not decide the verdict; a dependency that IS configured and failing
-    # does.
-    #
-    # Phase 2 owns tightening this: once the CRM write path exists, espocrm must be
-    # configured, and an unconfigured CRM becomes a genuine readiness failure.
+    # A dependency nobody has configured yet is not an outage — except EspoCRM,
+    # once the write path exists. Phase 2 made CRM writes load-bearing, so an
+    # unconfigured EspoCRM is a real readiness failure. LLM keys stay optional:
+    # a local checkout without providers is still a valid state for everything
+    # that is not extraction.
     unconfigured = sorted(
         name for name, check in checks.items() if not check.get("configured", True)
     )
@@ -99,6 +95,9 @@ def ready(response: Response) -> dict[str, Any]:
         for name, check in checks.items()
         if check.get("configured", True) and not check.get("ok", False)
     )
+    if "espocrm" in unconfigured and "espocrm" not in failing:
+        failing.append("espocrm")
+        failing.sort()
 
     if failing:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE

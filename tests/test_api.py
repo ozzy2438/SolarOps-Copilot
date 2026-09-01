@@ -48,9 +48,7 @@ def test_openapi_is_a_complete_map_of_the_service(client: TestClient) -> None:
 @pytest.mark.parametrize(
     ("path", "phase"),
     [
-        ("/documents/abc", "Phase 2"),
         ("/qa/corpus/stats", "Phase 3"),
-        ("/review", "Phase 2"),
         ("/admin/incidents", "Phase 4"),
     ],
 )
@@ -62,14 +60,32 @@ def test_unimplemented_routes_return_501_naming_their_phase(
     assert phase in response.json()["detail"]
 
 
+def test_review_list_is_no_longer_a_501(client: TestClient) -> None:
+    response = client.get("/review")
+    assert response.status_code == 200
+    assert isinstance(response.json()["items"], list)
+
+
+def test_submit_document_returns_202_without_waiting_for_a_model(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "voltdesk.api.routes.documents.enqueue_process_document", lambda _document_id: None
+    )
+    response = client.post(
+        "/documents",
+        data={"document_type": "electricity_bill"},
+        files={"file": ("bill.txt", b"NMI 6305888444\n", "text/plain")},
+    )
+    assert response.status_code == 202
+    assert "document_id" in response.json()
+
+
 def test_unconfigured_espocrm_does_not_make_the_service_degraded(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """A fresh checkout has no EspoCRM API key, because an API user has to be created
-    by hand. Reporting that correct state as 503 trains people to ignore this endpoint.
-
-    The dependency is still reported in full, and listed under `unconfigured`, so it
-    cannot be missed - it just does not decide the verdict.
+    """Phase 2: the CRM write path exists, so an unconfigured EspoCRM is a
+    readiness failure. The node id is kept so the Phase 2 brief still points here.
     """
     from voltdesk.api.routes import health as health_route
 
@@ -91,12 +107,14 @@ def test_unconfigured_espocrm_does_not_make_the_service_degraded(
             return _Health()
 
     monkeypatch.setattr(health_route, "EspoCrmClient", _Crm)
-    body = client.get("/health/ready").json()
+    response = client.get("/health/ready")
+    body = response.json()
 
     assert "espocrm" in body["unconfigured"]
-    assert "espocrm" not in body["failing"]
+    assert "espocrm" in body["failing"]
+    assert body["status"] == "degraded"
+    assert response.status_code == 503
     assert body["checks"]["espocrm"]["configured"] is False
-    # The reason must be there. A bare ok:false gives the operator nothing to act on.
     assert body["checks"]["espocrm"]["detail"]
 
 

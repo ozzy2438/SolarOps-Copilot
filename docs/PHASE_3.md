@@ -28,8 +28,9 @@ Modify:
 
 - `voltdesk/api/routes/qa.py` — replace the 501s
 - `tests/test_phase3_stubs.py` — replace each stub test with a real one, do not delete
-- `migrations/0005_*.sql` or later — **only** if you need schema. Set the vector
-  dimension in a new migration; do not edit `0003`.
+- `migrations/0006_*.sql` or later — **only** if you need schema. Phase 2 used
+  `0005_document_bytes.sql` for inbound file bytes. Set the vector dimension in a
+  new migration; do not edit `0003`.
 - `docs/DATA_SOURCES.md` — fill in the source table as you verify each entry
 - `PROGRESS.md`, `docs/DECISIONS.md`
 
