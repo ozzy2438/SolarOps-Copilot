@@ -12,18 +12,13 @@ from voltdesk.evaluation.metrics import (
     field_recall,
     summarise,
 )
-from voltdesk.evaluation.runner import load_golden_set, run, run_benchmark
+from voltdesk.evaluation.runner import load_golden_set
 
 pytestmark = pytest.mark.phase4
 
 
-def test_runner_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 4"):
-        load_golden_set()
-    with pytest.raises(NotImplementedError, match="Phase 4"):
-        run([], None)  # type: ignore[arg-type]
-    with pytest.raises(NotImplementedError, match="Phase 4"):
-        run_benchmark([])
+def test_runner_stub_is_replaced() -> None:
+    assert len(load_golden_set()) == 150
 
 
 @pytest.mark.parametrize(
