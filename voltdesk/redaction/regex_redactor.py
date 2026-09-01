@@ -27,7 +27,8 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("PHONE", re.compile(r"(?:\+?61[ -]?|\b0)[2-9](?:[ -]?\d){8}\b")),
     # Australian Business Number: 11 digits, commonly spaced 2-3-3-3.
     ("ABN", re.compile(r"\b\d{2}[ ]?\d{3}[ ]?\d{3}[ ]?\d{3}\b")),
-    # Retailer account numbers: long digit runs that are not an ABN.
+    # Retailer account numbers: 8–12 digit runs. NMIs are also 10–11 characters
+    # and MUST NOT match; see `_nmi_values` and ADR-0009 / ADR-0014.
     ("ACCOUNT_NUMBER", re.compile(r"\b\d{8,12}\b")),
     ("BSB", re.compile(r"\b\d{3}-\d{3}\b")),
     # Street address line: number + words + street-type suffix.
@@ -46,6 +47,31 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
 #: it. It is deliberately NOT redacted. This is a decision, recorded in ADR-0009.
 NEVER_REDACTED_NOTE = "NMI is a site identifier and is intentionally preserved. See ADR-0009."
 
+# NMIs are 10 or 11 characters. We do not invent a checksum (the AEMO NMI Procedure
+# is still TODO(verify)); we identify them the way bills actually present them —
+# labelled as NMI / National Metering Identifier — and then protect every later
+# occurrence of the same value so a labelled NMI is not eaten mid-document.
+_NMI_LABELLED = re.compile(
+    r"\b(?:NMI|National\s+Metering\s+Identifier)\s*"
+    r"(?:number|no\.?|#)?\s*[:#-]?\s*([A-Z0-9]{10,11})\b",
+    re.IGNORECASE,
+)
+
+
+def _nmi_values(text: str) -> set[str]:
+    """Values labelled as an NMI in `text`, plus their digit-only forms."""
+    found: set[str] = set()
+    for match in _NMI_LABELLED.finditer(text):
+        raw = match.group(1)
+        found.add(raw)
+        found.add(re.sub(r"\s+", "", raw))
+    return found
+
+
+def _is_protected_nmi(original: str, protected: set[str]) -> bool:
+    compact = re.sub(r"[\s-]+", "", original)
+    return original in protected or compact in protected
+
 
 class RegexRedactor(Redactor):
     """Pattern-based redactor. Deterministic for a given input string."""
@@ -57,10 +83,16 @@ class RegexRedactor(Redactor):
         # number 5 times produces one placeholder, and the prompt stays cacheable.
         seen: dict[tuple[str, str], str] = {}
 
+        protected_nmis = _nmi_values(text)
+
         for entity_type, pattern in _PATTERNS:
 
             def _replace(match: re.Match[str], _t: str = entity_type) -> str:
                 original = match.group(0)
+                if _t in {"ACCOUNT_NUMBER", "ABN"} and _is_protected_nmi(
+                    original, protected_nmis
+                ):
+                    return original
                 key = (_t, original)
                 if key in seen:
                     return seen[key]

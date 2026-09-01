@@ -47,13 +47,11 @@ join depends on it (ADR-0009).
    pass through are fabricated by construction. This is a real limitation for
    production use with real documents and must be stated in any operational writeup.
 
-2. **`ACCOUNT_NUMBER` currently swallows the NMI.** The pattern matches digit runs of
-   8–12, and an NMI is 10–11 digits. So ADR-0009 states the intent, and the current
-   implementation contradicts it. `tests/test_redaction.py` documents the actual
-   behaviour rather than the intended one.
-   **`TODO(verify)` / Phase 2, blocking:** exclude NMIs from `ACCOUNT_NUMBER` before
-   measuring extraction quality. A redacted NMI makes every bill extraction unmatched,
-   so this is not cosmetic — it will dominate the Phase 4 numbers if left.
+2. **`ACCOUNT_NUMBER` no longer swallows a labelled NMI.** Phase 2 (ADR-0014) protects
+   10–11 character values that the document labels as `NMI` / `National Metering
+   Identifier`, including later unlabelled repeats of the same value. A checksum was
+   **not** invented — the AEMO NMI Procedure is still `TODO(verify)`. Residual gap:
+   an *unlabelled* 10–11 digit run still matches `ACCOUNT_NUMBER`.
 
 3. **Over-redaction is preferred to under-redaction.** A redacted street number costs
    a little extraction accuracy; an un-redacted customer address that reaches a third

@@ -212,3 +212,22 @@ fields, two retailer layouts) are injected on purpose.
 before it is committed — `docs/DATA_SOURCES.md` carries those TODOs, and they are
 open. A generated corpus is reproducible from a seed, and ground truth comes free
 (`ground_truth_source='generator_seed'`), which is most of the golden set's value.
+
+---
+
+## ADR-0014: NMIs are identified by label, not by a checksum
+
+**Context.** ADR-0009 says the NMI is not redacted. The `ACCOUNT_NUMBER` pattern
+matched 8–12 digit runs and therefore swallowed every numeric NMI. The AEMO NMI
+Procedure checksum is still `TODO(verify)`; inventing a pattern would be worse than
+leaving the gap, because Phase 4 would treat a guessed checksum as a real filter.
+
+**Decision.** Treat a 10–11 character token as an NMI when the document labels it
+`NMI` or `National Metering Identifier`. Protect that value for the rest of the
+string, including later unlabelled repeats. Do not invent a checksum.
+
+**Consequences.** A labelled NMI survives redaction and remains the join key.
+An unlabelled 10–11 digit run is still redacted as an account number. Bills in this
+corpus (and real Australian bills) print the NMI with that label; that is the path
+extraction is measured on. If a later phase verifies the checksum, a superseding
+ADR can widen protection to unlabelled tokens that pass it.

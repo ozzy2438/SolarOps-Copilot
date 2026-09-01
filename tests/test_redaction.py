@@ -56,9 +56,24 @@ def test_rehydrate_is_not_confused_by_prefix_placeholders() -> None:
 
 def test_nmi_is_deliberately_preserved() -> None:
     """ADR-0009: the NMI is a site identifier, not personal information, and every
-    downstream join depends on it."""
+    downstream join depends on it. A labelled NMI must survive redaction."""
     result = RegexRedactor().redact("NMI 6305888444 for the site.")
-    # It matches the account-number pattern, so it IS redacted by the current
-    # implementation. This test documents that known limitation rather than
-    # pretending otherwise - see the TODO in docs/GUARDRAILS.md.
+    assert "6305888444" in result.text
+    assert "ACCOUNT_NUMBER" not in result.entity_counts
+
+
+def test_nmi_repeated_after_its_label_is_still_preserved() -> None:
+    """Once labelled, the same NMI appearing later without the label stays intact.
+    Otherwise a bill that prints the NMI in a header and again in a table would
+    still lose the join key."""
+    result = RegexRedactor().redact(
+        "NMI 6305888444 for the site. Meter register 6305888444 peak kWh."
+    )
+    assert result.text.count("6305888444") == 2
+
+
+def test_unlabelled_digit_run_is_still_an_account_number() -> None:
+    """We did not invent an NMI checksum, so an unlabelled 10-digit run is still
+    treated as an account number. That is the residual gap, not a regression."""
+    result = RegexRedactor().redact("Reference 6305888444 is overdue.")
     assert "6305888444" not in result.text
