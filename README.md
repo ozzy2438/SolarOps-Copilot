@@ -49,6 +49,10 @@ curl -s localhost:8000/health/live     # {"status":"ok"}
 
 `localhost:8000/docs` is the full API surface. `localhost:8080` is EspoCRM.
 
+> The Compose file validates (`docker compose config`) but the stack has not yet been
+> brought up end to end — the Phase 1 environment had no Docker daemon. See
+> `PROGRESS.md`.
+
 To work on the code:
 
 ```bash

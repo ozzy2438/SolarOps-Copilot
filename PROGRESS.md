@@ -42,7 +42,16 @@ chunking, embeddings, corpus ingestion, retrieval, synthesis, abstention (Phase 
 evaluation runner and metrics (Phase 4).
 
 **Verification:** `make verify` clean — 75 tests passed, ruff clean, mypy clean across
-65 source files, no schema drift.
+65 source files, no schema drift. Every stub raises `NotImplementedError` naming its
+phase (17 Phase 2, 9 Phase 3, 9 Phase 4); all three committed golden records validate
+against `GoldenRecord`.
+
+**Not verified, and Phase 2 should do it first thing:** `docker compose up` was never
+actually run. The Phase 1 environment had no reachable Docker daemon, so the compose
+file was only validated with `docker compose config` (which passes). The definition of
+done calls for the stack coming up with a green health endpoint — that remains
+unconfirmed. The most likely thing to be wrong is the EspoCRM service block, whose
+image tag and environment variables carry a `TODO(verify)`.
 
 **ADRs added:** 0001–0013. The ones a later phase is most likely to want to overturn:
 0003 (`extra="forbid"`), 0008 (unverified prices refuse to publish), 0010 (the router
