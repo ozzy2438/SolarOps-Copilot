@@ -1,0 +1,19 @@
+{
+  "record_id": "email-0004",
+  "task_type": "email_extraction",
+  "input_path": "data/generated/emails/email-0004.txt",
+  "expected": {
+    "thread_subject": "Quote request \u2014 Peninsula Cold Chain 19 Freight Lane, Campbellfield VIC 3061",
+    "intent": "quote_request",
+    "company_name": "Peninsula Cold Chain",
+    "site_address": "19 Freight Lane, Campbellfield VIC 3061",
+    "requested_system_kw": 125.0,
+    "requested_battery_kwh": null,
+    "deadline": "2026-02-25",
+    "message_count": 3,
+    "first_message_at": "2026-02-04T09:15:00+00:00",
+    "nmi": "6296827170"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: ['inconsistent_date_format', 'missing_field']"
+}

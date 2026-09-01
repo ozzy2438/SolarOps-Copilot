@@ -1,0 +1,19 @@
+{
+  "record_id": "email-0005",
+  "task_type": "email_extraction",
+  "input_path": "data/generated/emails/email-0005.txt",
+  "expected": {
+    "thread_subject": "Quote request \u2014 Coldstore Logistics Pty Ltd 3 Warehouse Road, Dandenong South VIC 3175",
+    "intent": "quote_request",
+    "company_name": "Coldstore Logistics Pty Ltd",
+    "site_address": "3 Warehouse Road, Dandenong South VIC 3175",
+    "requested_system_kw": 50.0,
+    "requested_battery_kwh": 20.0,
+    "deadline": "2026-02-26",
+    "message_count": 3,
+    "first_message_at": "2026-02-05T09:15:00+00:00",
+    "nmi": "6370446715"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: ['missing_field']"
+}

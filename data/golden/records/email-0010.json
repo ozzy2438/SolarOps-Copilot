@@ -1,0 +1,19 @@
+{
+  "record_id": "email-0010",
+  "task_type": "email_extraction",
+  "input_path": "data/generated/emails/email-0010.txt",
+  "expected": {
+    "thread_subject": "Quote request \u2014 Westgate Packing Co 19 Freight Lane, Dandenong South VIC 3175",
+    "intent": "quote_request",
+    "company_name": "Westgate Packing Co",
+    "site_address": "19 Freight Lane, Dandenong South VIC 3175",
+    "requested_system_kw": 75.0,
+    "requested_battery_kwh": null,
+    "deadline": "2026-03-03",
+    "message_count": 3,
+    "first_message_at": "2026-02-10T09:15:00+00:00",
+    "nmi": "6220178453"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: ['no_text_layer', 'multi_page_table_split']"
+}

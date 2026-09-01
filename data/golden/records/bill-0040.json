@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0040",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0040.pdf",
+  "expected": {
+    "retailer_name": "Redgum Electricity",
+    "nmi": "6228483529",
+    "account_number": "4250403349",
+    "site_address": "14 Kerrigan Way, Laverton North VIC 3026",
+    "billing_period.start": "2026-01-01",
+    "billing_period.end": "2026-03-31",
+    "issue_date": "2026-04-08",
+    "total_amount.amount": 9976.92,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 35018.5,
+    "peak_demand_kva": null,
+    "tariff_type": "time_of_use",
+    "tariff_code": "VDO-SB-TOU-UNITED",
+    "solar_export_kwh": 4009.9,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0008",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0008.pdf",
+  "expected": {
+    "retailer_name": "Redgum Electricity",
+    "nmi": "6292201052",
+    "account_number": "4295808978",
+    "site_address": "22 Perrin Court, Somerton VIC 3062",
+    "billing_period.start": "2026-04-01",
+    "billing_period.end": "2026-06-29",
+    "issue_date": "2026-07-07",
+    "total_amount.amount": 9536.02,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 31973.4,
+    "peak_demand_kva": null,
+    "tariff_type": "time_of_use",
+    "tariff_code": "VDO-SB-TOU-JEMENA",
+    "solar_export_kwh": 3661.2,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: ['low_contrast_photocopy']"
+}

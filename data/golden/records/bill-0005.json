@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0005",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0005.pdf",
+  "expected": {
+    "retailer_name": "Southline Power",
+    "nmi": "6227663806",
+    "account_number": "4256122105",
+    "site_address": "22 Perrin Court, Somerton VIC 3062",
+    "billing_period.start": "2026-04-01",
+    "billing_period.end": "2026-06-29",
+    "issue_date": "2026-07-07",
+    "total_amount.amount": 7157.22,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 27405.8,
+    "peak_demand_kva": null,
+    "tariff_type": "flat",
+    "tariff_code": "VDO-SB-FLAT-UNITED",
+    "solar_export_kwh": null,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: ['missing_field']"
+}

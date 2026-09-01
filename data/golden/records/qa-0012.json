@@ -1,14 +1,15 @@
 {
-  "record_id": "qa-0001",
+  "record_id": "qa-0012",
   "task_type": "knowledge_qa",
-  "input_path": "data/golden/questions/qa-0001.txt",
+  "input_path": "data/golden/questions/qa-0012.txt",
   "expected": {
     "should_abstain": false,
     "answer_contains": [
-      "12 months"
+      "current list",
+      "claim is prepared"
     ],
     "required_citation_chunk_ids": [
-      "chunk-c2a3b2142b8b747be493c895"
+      "chunk-34f911a10fab1d8a3425a652"
     ]
   },
   "ground_truth_source": "human_labelled",

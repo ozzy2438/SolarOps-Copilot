@@ -1,14 +1,14 @@
 {
-  "record_id": "qa-0001",
+  "record_id": "qa-0025",
   "task_type": "knowledge_qa",
-  "input_path": "data/golden/questions/qa-0001.txt",
+  "input_path": "data/golden/questions/qa-0025.txt",
   "expected": {
     "should_abstain": false,
     "answer_contains": [
-      "12 months"
+      "at least five years"
     ],
     "required_citation_chunk_ids": [
-      "chunk-c2a3b2142b8b747be493c895"
+      "chunk-73decf989e3100c179c5185c"
     ]
   },
   "ground_truth_source": "human_labelled",

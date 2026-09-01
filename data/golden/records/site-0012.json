@@ -1,0 +1,24 @@
+{
+  "record_id": "site-0012",
+  "task_type": "site_assessment_extraction",
+  "input_path": "data/generated/site_notes/site-0012.txt",
+  "expected": {
+    "site_address": "61 Harbour Parade, Dandenong South VIC 3175",
+    "nmi": "6288295445",
+    "assessed_on": "2026-02-08",
+    "roof_material": "asbestos cement sheet",
+    "roof_planes.0.orientation": "NE",
+    "roof_planes.0.tilt_degrees": 5.0,
+    "roof_planes.0.usable_area_m2": 475.0,
+    "roof_planes.1.orientation": "W",
+    "roof_planes.1.tilt_degrees": 5.0,
+    "roof_planes.1.usable_area_m2": 200.0,
+    "phase_configuration": "three_phase",
+    "main_switch_rating_a": 250.0,
+    "existing_pv_kw": 15.0,
+    "battery_space_available": true,
+    "access_constraints": "internal ladder only; no crane on the western side"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

@@ -1,25 +1,25 @@
 {
-  "record_id": "bill-0001",
+  "record_id": "bill-0013",
   "task_type": "bill_extraction",
-  "input_path": "data/generated/bills/bill-0001.pdf",
+  "input_path": "data/generated/bills/bill-0013.pdf",
   "expected": {
     "retailer_name": "Northbeam Energy",
-    "nmi": "6343849730",
-    "account_number": "4125267841",
-    "site_address": "19 Freight Lane, Scoresby VIC 3179",
+    "nmi": "6332524704",
+    "account_number": "4115825456",
+    "site_address": "61 Harbour Parade, Laverton North VIC 3026",
     "billing_period.start": "2026-01-01",
     "billing_period.end": "2026-03-31",
     "issue_date": "2026-04-08",
-    "total_amount.amount": 7412.78,
+    "total_amount.amount": 7161.39,
     "total_amount.is_gst_inclusive": true,
-    "total_consumption_kwh": 21315.6,
+    "total_consumption_kwh": 24360.7,
     "peak_demand_kva": null,
     "tariff_type": "flat",
-    "tariff_code": "VDO-SB-FLAT-AUSNET",
+    "tariff_code": "VDO-SB-FLAT-JEMENA",
     "solar_export_kwh": null,
     "phase_configuration": "three_phase",
     "page_count": 1
   },
   "ground_truth_source": "generator_seed",
-  "notes": "Synthetic generator seed 7; defects: ['skewed_scan', 'no_text_layer']"
+  "notes": "Synthetic generator seed 7; defects: ['missing_field', 'handwritten_notes']"
 }

@@ -1,11 +1,11 @@
 {
-  "record_id": "qa-0001",
+  "record_id": "qa-0003",
   "task_type": "knowledge_qa",
-  "input_path": "data/golden/questions/qa-0001.txt",
+  "input_path": "data/golden/questions/qa-0003.txt",
   "expected": {
     "should_abstain": false,
     "answer_contains": [
-      "12 months"
+      "eligible"
     ],
     "required_citation_chunk_ids": [
       "chunk-c2a3b2142b8b747be493c895"

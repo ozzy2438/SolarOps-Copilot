@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0030",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0030.pdf",
+  "expected": {
+    "retailer_name": "Southline Power",
+    "nmi": "6329561259",
+    "account_number": "4267521546",
+    "site_address": "61 Harbour Parade, Truganina VIC 3029",
+    "billing_period.start": "2026-06-30",
+    "billing_period.end": "2026-09-27",
+    "issue_date": "2026-10-05",
+    "total_amount.amount": 9976.92,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 35018.5,
+    "peak_demand_kva": null,
+    "tariff_type": "time_of_use",
+    "tariff_code": "VDO-SB-TOU-UNITED",
+    "solar_export_kwh": 4009.9,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

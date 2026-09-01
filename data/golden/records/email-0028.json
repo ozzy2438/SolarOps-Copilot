@@ -1,0 +1,19 @@
+{
+  "record_id": "email-0028",
+  "task_type": "email_extraction",
+  "input_path": "data/generated/emails/email-0028.txt",
+  "expected": {
+    "thread_subject": "Quote request \u2014 Westgate Packing Co 14 Kerrigan Way, Somerton VIC 3062",
+    "intent": "quote_request",
+    "company_name": "Westgate Packing Co",
+    "site_address": "14 Kerrigan Way, Somerton VIC 3062",
+    "requested_system_kw": 125.0,
+    "requested_battery_kwh": null,
+    "deadline": "2026-03-21",
+    "message_count": 3,
+    "first_message_at": "2026-02-28T09:15:00+00:00",
+    "nmi": "6214591716"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

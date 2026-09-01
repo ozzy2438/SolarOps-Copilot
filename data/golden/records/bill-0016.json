@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0016",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0016.pdf",
+  "expected": {
+    "retailer_name": "Southline Power",
+    "nmi": "6262265447",
+    "account_number": "4276769224",
+    "site_address": "8 Example Street, Dandenong South VIC 3175",
+    "billing_period.start": "2026-01-01",
+    "billing_period.end": "2026-03-31",
+    "issue_date": "2026-04-08",
+    "total_amount.amount": 9712.95,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 28928.3,
+    "peak_demand_kva": null,
+    "tariff_type": "time_of_use",
+    "tariff_code": "VDO-SB-TOU-AUSNET",
+    "solar_export_kwh": 3312.5,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: ['low_contrast_photocopy', 'skewed_scan']"
+}

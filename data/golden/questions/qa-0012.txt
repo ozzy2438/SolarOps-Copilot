@@ -1,0 +1,1 @@
+When should product-list eligibility be checked for an STC claim?

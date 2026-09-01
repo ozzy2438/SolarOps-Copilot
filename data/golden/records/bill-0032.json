@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0032",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0032.pdf",
+  "expected": {
+    "retailer_name": "Harbourlight Retail",
+    "nmi": "6223286736",
+    "account_number": "4293763351",
+    "site_address": "8 Example Street, Campbellfield VIC 3061",
+    "billing_period.start": "2026-04-01",
+    "billing_period.end": "2026-06-29",
+    "issue_date": "2026-07-07",
+    "total_amount.amount": 5793.98,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 22838.1,
+    "peak_demand_kva": null,
+    "tariff_type": "flat",
+    "tariff_code": "VDO-SB-FLAT-CITIPOWER",
+    "solar_export_kwh": 2615.1,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

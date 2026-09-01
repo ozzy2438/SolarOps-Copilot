@@ -1,14 +1,14 @@
 {
-  "record_id": "qa-0001",
+  "record_id": "qa-0020",
   "task_type": "knowledge_qa",
-  "input_path": "data/golden/questions/qa-0001.txt",
+  "input_path": "data/golden/questions/qa-0020.txt",
   "expected": {
     "should_abstain": false,
     "answer_contains": [
-      "12 months"
+      "every state and territory"
     ],
     "required_citation_chunk_ids": [
-      "chunk-c2a3b2142b8b747be493c895"
+      "chunk-e5dd6fe29b5354ce829440df"
     ]
   },
   "ground_truth_source": "human_labelled",

@@ -1,24 +1,24 @@
 {
-  "record_id": "site-0001",
+  "record_id": "site-0006",
   "task_type": "site_assessment_extraction",
-  "input_path": "data/generated/site_notes/site-0001.txt",
+  "input_path": "data/generated/site_notes/site-0006.txt",
   "expected": {
     "site_address": "3 Warehouse Road, Campbellfield VIC 3061",
-    "nmi": null,
-    "assessed_on": "2026-01-06",
-    "roof_material": "Klip-Lok steel",
+    "nmi": "6272617794",
+    "assessed_on": "2026-01-21",
+    "roof_material": "Colorbond",
     "roof_planes.0.orientation": "N",
     "roof_planes.0.tilt_degrees": 5.0,
-    "roof_planes.0.usable_area_m2": 200.0,
+    "roof_planes.0.usable_area_m2": 325.0,
     "roof_planes.1.orientation": "E",
     "roof_planes.1.tilt_degrees": 5.0,
-    "roof_planes.1.usable_area_m2": 120.0,
+    "roof_planes.1.usable_area_m2": 220.0,
     "phase_configuration": "three_phase",
     "main_switch_rating_a": null,
-    "existing_pv_kw": null,
+    "existing_pv_kw": 10.0,
     "battery_space_available": true,
     "access_constraints": "internal ladder only; no crane on the western side"
   },
   "ground_truth_source": "generator_seed",
-  "notes": "Synthetic generator seed 7; defects: ['skewed_scan', 'no_text_layer']"
+  "notes": "Synthetic generator seed 7; defects: ['handwritten_notes']"
 }

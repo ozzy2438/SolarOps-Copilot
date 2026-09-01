@@ -1,0 +1,19 @@
+{
+  "record_id": "email-0026",
+  "task_type": "email_extraction",
+  "input_path": "data/generated/emails/email-0026.txt",
+  "expected": {
+    "thread_subject": "Quote request \u2014 Inner North Joinery 22 Perrin Court, Truganina VIC 3029",
+    "intent": "quote_request",
+    "company_name": "Inner North Joinery",
+    "site_address": "22 Perrin Court, Truganina VIC 3029",
+    "requested_system_kw": 75.0,
+    "requested_battery_kwh": 20.0,
+    "deadline": "2026-03-19",
+    "message_count": 3,
+    "first_message_at": "2026-02-26T09:15:00+00:00",
+    "nmi": "6283675557"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

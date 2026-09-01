@@ -1,0 +1,19 @@
+{
+  "record_id": "email-0016",
+  "task_type": "email_extraction",
+  "input_path": "data/generated/emails/email-0016.txt",
+  "expected": {
+    "thread_subject": "Quote request \u2014 Westgate Packing Co 3 Warehouse Road, Dandenong South VIC 3175",
+    "intent": "quote_request",
+    "company_name": "Westgate Packing Co",
+    "site_address": "3 Warehouse Road, Dandenong South VIC 3175",
+    "requested_system_kw": 125.0,
+    "requested_battery_kwh": null,
+    "deadline": "2026-03-09",
+    "message_count": 3,
+    "first_message_at": "2026-02-16T09:15:00+00:00",
+    "nmi": "6314138722"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

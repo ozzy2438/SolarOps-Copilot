@@ -1,15 +1,15 @@
 {
-  "record_id": "bill-0001",
+  "record_id": "bill-0021",
   "task_type": "bill_extraction",
-  "input_path": "data/generated/bills/bill-0001.pdf",
+  "input_path": "data/generated/bills/bill-0021.pdf",
   "expected": {
     "retailer_name": "Northbeam Energy",
-    "nmi": "6343849730",
-    "account_number": "4125267841",
-    "site_address": "19 Freight Lane, Scoresby VIC 3179",
-    "billing_period.start": "2026-01-01",
-    "billing_period.end": "2026-03-31",
-    "issue_date": "2026-04-08",
+    "nmi": "6297605794",
+    "account_number": "4264748842",
+    "site_address": "14 Kerrigan Way, Somerton VIC 3062",
+    "billing_period.start": "2026-06-30",
+    "billing_period.end": "2026-09-27",
+    "issue_date": "2026-10-05",
     "total_amount.amount": 7412.78,
     "total_amount.is_gst_inclusive": true,
     "total_consumption_kwh": 21315.6,
@@ -21,5 +21,5 @@
     "page_count": 1
   },
   "ground_truth_source": "generator_seed",
-  "notes": "Synthetic generator seed 7; defects: ['skewed_scan', 'no_text_layer']"
+  "notes": "Synthetic generator seed 7; defects: []"
 }

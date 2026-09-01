@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0037",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0037.pdf",
+  "expected": {
+    "retailer_name": "Southline Power",
+    "nmi": "6216348932",
+    "account_number": "4298621313",
+    "site_address": "3 Warehouse Road, Somerton VIC 3062",
+    "billing_period.start": "2026-01-01",
+    "billing_period.end": "2026-03-31",
+    "issue_date": "2026-04-08",
+    "total_amount.amount": 8497.4,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 30450.9,
+    "peak_demand_kva": null,
+    "tariff_type": "time_of_use",
+    "tariff_code": "VDO-SB-TOU-CITIPOWER",
+    "solar_export_kwh": null,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}
