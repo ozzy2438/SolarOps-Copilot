@@ -56,9 +56,26 @@ def test_rehydrate_is_not_confused_by_prefix_placeholders() -> None:
 
 def test_nmi_is_deliberately_preserved() -> None:
     """ADR-0009: the NMI is a site identifier, not personal information, and every
-    downstream join depends on it."""
+    downstream join depends on it. A labelled NMI must survive ACCOUNT_NUMBER."""
     result = RegexRedactor().redact("NMI 6305888444 for the site.")
-    # It matches the account-number pattern, so it IS redacted by the current
-    # implementation. This test documents that known limitation rather than
-    # pretending otherwise - see the TODO in docs/GUARDRAILS.md.
-    assert "6305888444" not in result.text
+    assert "6305888444" in result.text
+    assert "ACCOUNT_NUMBER" not in result.entity_counts
+
+
+def test_nmi_with_colon_and_full_label_is_preserved() -> None:
+    redactor = RegexRedactor()
+    colon = redactor.redact("NMI: 6305888444 billed this quarter.")
+    assert "6305888444" in colon.text
+    full = redactor.redact(
+        "National Metering Identifier 63058884441 appears on the connection."
+    )
+    assert "63058884441" in full.text
+    assert "ABN" not in full.entity_counts
+
+
+def test_unlabelled_account_number_is_still_redacted() -> None:
+    """Over-redaction stays preferred. A 10-digit run that is not labelled as an
+    NMI is still an account number."""
+    result = RegexRedactor().redact("Account 4029183746 is overdue.")
+    assert "4029183746" not in result.text
+    assert result.entity_counts["ACCOUNT_NUMBER"] == 1

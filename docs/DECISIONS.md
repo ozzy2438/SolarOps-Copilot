@@ -212,3 +212,25 @@ fields, two retailer layouts) are injected on purpose.
 before it is committed — `docs/DATA_SOURCES.md` carries those TODOs, and they are
 open. A generated corpus is reproducible from a seed, and ground truth comes free
 (`ground_truth_source='generator_seed'`), which is most of the golden set's value.
+
+---
+
+## ADR-0014: Inbound document bytes live in Postgres, not on a host volume
+
+**Context.** `app.documents` in `0001` stored `sha256` and `byte_size` but not the
+file. Phase 2's API and RQ worker must both read the original bytes after
+`POST /documents` returns 202. They share Postgres already. A host-mounted volume
+would be a second store to keep in sync, and Compose deliberately does not publish
+Postgres on the host.
+
+**Decision.** Add `app.documents.content BYTEA` in `migrations/0005_document_bytes.sql`.
+The same row is the document record and the payload. Duplicate `sha256` still
+collapses to one row (`documents_sha256_key`). Phase 3 vector-dimension changes
+start at `0006`; `0003`'s 1536 placeholder is untouched.
+
+**Consequences.** Large PDFs live in the operational database. That is acceptable
+at the volume of bills and site notes this service is for. Object storage would
+need a new dependency and a consistency story the worker does not have. Existing
+databases created from `0001`–`0004` pick this up by running the migration loop;
+Compose initdb on a fresh volume applies `0005` automatically.
+

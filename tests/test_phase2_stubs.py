@@ -8,6 +8,8 @@ test — not deleted. A disappearing test is indistinguishable from a forgotten 
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from voltdesk.contracts.common import DocumentType
@@ -21,41 +23,50 @@ from voltdesk.synthetic import GeneratorConfig, SyntheticGenerator
 pytestmark = pytest.mark.phase2
 
 
-@pytest.mark.parametrize("parser", [BillParser(), SiteNotesParser(), EmailThreadParser()])
-def test_parsers_are_not_implemented(parser: object) -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        parser.parse("doc-1", b"", "f.pdf")  # type: ignore[attr-defined]
+def test_parsers_are_not_implemented() -> None:
+    parsed = BillParser().parse("doc-1", b"NMI 6305888444", "bill.txt")
+    assert parsed.pages[0].text
+    assert SiteNotesParser().parse("s", b"Roof: steel\n", "notes.txt").pages
+    assert EmailThreadParser().parse("e", b"Subject: hi\n\nHello", "t.txt").pages
 
 
 def test_extractor_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        Extractor().extract(None)  # type: ignore[arg-type]
+    assert callable(Extractor().extract)
 
 
 def test_prompts_are_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        prompts.system_prompt_for(DocumentType.ELECTRICITY_BILL)
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        prompts.user_prompt_for(DocumentType.ELECTRICITY_BILL, "text")
+    system = prompts.system_prompt_for(DocumentType.ELECTRICITY_BILL)
+    assert "JSON Schema" in system
+    assert "value: null" in system
+    user = prompts.user_prompt_for(DocumentType.ELECTRICITY_BILL, "text")
+    assert "text" in user
+    assert "document begins" in user
 
 
 def test_confidence_scoring_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        verify_quote("q", None)  # type: ignore[arg-type]
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        calibrate(None, None)  # type: ignore[arg-type]
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        classify_for_write("nmi", 0.9)
+    from helpers_phase2 import DOCUMENT_TEXT, parsed_bill
+
+    document = parsed_bill(DOCUMENT_TEXT)
+    assert verify_quote("NMI 6305888444", document) is True
+    assert classify_for_write("nmi", 0.9) == "auto_write"
+    assert callable(calibrate)
 
 
 def test_review_queue_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        ReviewQueue().list_pending()
+    assert ReviewQueue(memory={}).list_pending() == []
 
 
-def test_synthetic_generator_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        SyntheticGenerator(GeneratorConfig(seed=1)).generate()
+def test_synthetic_generator_is_not_implemented(tmp_path: Path) -> None:
+    docs = SyntheticGenerator(
+        GeneratorConfig(
+            seed=1,
+            bill_count=1,
+            site_assessment_count=1,
+            email_thread_count=1,
+            output_dir=str(tmp_path),
+        )
+    ).generate()
+    assert len(docs) == 3
 
 
 def test_generator_config_is_reproducible_by_construction() -> None:

@@ -12,5 +12,8 @@ dist/
 build/
 data/corpus/*
 !data/corpus/.gitkeep
+!data/corpus/SOURCES.md
+!data/corpus/tariffs.json
+!data/corpus/interval_data.csv
 data/generated/
 *.log

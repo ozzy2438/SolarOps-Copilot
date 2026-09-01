@@ -17,13 +17,10 @@ information.
 | Distribution network embedded generation connection guidelines | Corpus; export limits, connection requirements | `TODO(verify)` — one per DNSP, terms differ |
 | Regulator small-scale certificate methodology | Corpus; certificate calculations | `TODO(verify)` — current document name and version |
 | State and federal rebate program documentation | Corpus; eligibility questions | `TODO(verify)` — programs change; record retrieval date |
-| Public energy plan / tariff API data | Synthetic bill generation (real tariff structures) | `TODO(verify)` — API terms of use |
-| Public half-hourly consumption and PV generation interval datasets | Synthetic bill generation (real consumption physics) | `TODO(verify)` — licence and attribution |
+| Public energy plan / tariff API data | Synthetic bill generation (real tariff structures) | Phase 2 used the Essential Services Commission Victorian Default Offer 2026–27 small-business standing-offer tables (retrieved 2026-09-01 from https://www.esc.vic.gov.au/electricity-and-gas/prices-tariffs-and-benchmarks/victorian-default-offer). Rates are in `data/corpus/tariffs.json`. **Licence still `TODO(verify)`** — the page is All Rights Reserved. |
+| Public half-hourly consumption and PV generation interval datasets | Synthetic bill generation (real consumption physics) | Phase 2 did **not** commit a third-party interval file. `data/corpus/interval_data.csv` is an in-repo occupancy shape (see `data/corpus/SOURCES.md`). **`TODO(verify)`** a licence-checked public dataset remains open. |
 
-**Every row above is an open TODO.** Phase 1 did not verify any of these URLs or
-licences, and deliberately did not invent them. This is the rule from the Phase 1
-brief: where an external fact is uncertain, say so rather than write a plausible
-detail that a later phase will build on.
+**Tier A rows above:** Phase 1 left every URL and licence as `TODO(verify)`. Phase 2 recorded a source URL and retrieval date for the VDO tariff tables used by the synthetic generator, and recorded that interval data is an in-repo occupancy shape rather than a third-party file. **Licences are still unverified.** The remaining six corpus sources are untouched and still blocking for Phase 3 ingestion.
 
 ### The rule for ingestion
 

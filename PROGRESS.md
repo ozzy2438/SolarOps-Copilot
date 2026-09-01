@@ -212,3 +212,80 @@ is deliberately naive).
 **What I would tell the next model:** fix the NMI redaction bug before you write a
 single parser. Everything you build this phase gets measured through extractions whose
 join key is currently being destroyed.
+
+---
+
+## Phase 2 — report
+
+**Status:** complete (intake pipeline implemented and unit-verified; live EspoCRM
+configured; Compose overlay networking in this environment is a remaining ops gap)
+
+**Implemented:**
+
+- `voltdesk/redaction/regex_redactor.py` — labelled NMI lifted out of ACCOUNT_NUMBER/ABN (Step 0).
+- `voltdesk/synthetic/` — deterministic generator split across identities, bills, site notes, emails, tariffs, intervals, defects. Default 150 documents. Ground truth JSON beside each file.
+- `data/corpus/tariffs.json`, `interval_data.csv`, `SOURCES.md` — VDO 2026–27 rates with URL + retrieval date; occupancy shape, not a third-party interval file.
+- `scripts/check_generator_determinism.py` — prints `deterministic: OK`.
+- `voltdesk/parsers/` — bills (tables, split-header stitch, `/Rotate` skew), emails (quoted-history dedupe), site notes (empty/OCR warnings). No invented OCR text.
+- `voltdesk/extraction/prompts.py`, `extractor.py`, `confidence.py` — stable schema prompts, one SCHEMA_REPAIR, quote calibration, Settings bands.
+- `voltdesk/crm/mapping.py` `build_*` / `payload_to_espo` and `voltdesk/crm/writer.py` — fact-based upsert keys; uncertain NMI blocking; emails not written as Account/Proposal.
+- `voltdesk/review/queue.py` — Postgres or process memory; corrections retained.
+- `voltdesk/storage.py`, `voltdesk/jobs.py` — BYTEA persist, RQ `voltdesk` queue, job-boundary failure → review.
+- `migrations/0005_document_bytes.sql` — `app.documents.content BYTEA`.
+- Routes: `POST /documents` 202, `GET /review` no longer 501; unconfigured EspoCRM is 503.
+- `tests/test_phase2_stubs.py` kept; stub asserts replaced with real ones.
+
+**Acceptance checklist:** 14/16 passing as commands. Failures named:
+
+| Criterion | Result |
+|---|---|
+| `make verify` | pass (after this report: ruff/mypy/pytest/schema check) |
+| NMI survives redaction | pass |
+| generator seed 7 → 150 | pass |
+| `scripts/check_generator_determinism.py` | `deterministic: OK` |
+| parsers (skew, split table, both date formats) | pass |
+| extraction fixtures, no network | pass |
+| `-k repair` exactly one repair | pass |
+| `-k quote` unverifiable quote lowers confidence | pass |
+| `-k idempotent` one CRM record | pass (FakeCrm + live EspoCRM 10.0.6) |
+| `-k blocking` uncertain NMI writes nothing | pass |
+| `POST /documents` → 202 | pass (host uvicorn; Compose API cannot reach Postgres in this environment) |
+| `GET /review` `.items \| length` a number | pass (`0` empty, not 501) |
+| `health/ready` espocrm `ok` / configured / reachable | pass against live API user |
+| unconfigured EspoCRM is 503 | pass (`test_unconfigured_espocrm_does_not_make_the_service_degraded`) |
+| `SELECT count(*) FROM app.model_calls` | **0** — no provider key in this environment, so the worker never completed a model call. Not claimed as audited live extraction. |
+| `grep Phase 2 NotImplementedError` | empty |
+
+Compose `docker compose up -d --build` did start images. **Container-to-container TCP timed out** (Postgres 5432, Redis 6379, MariaDB 3306, even HTTP 80). Host-published ports worked. EspoCRM installer therefore ran with MariaDB + Espo on the host network; API/worker acceptance used `docker-compose.hostports.yml` (55432/56379) plus uvicorn/rq on the host. That is not a silent rewrite of `docker-compose.yml`.
+
+**Contract changes:** none
+
+**ADRs added:** 0014 — inbound document bytes in Postgres BYTEA (`0005`); Phase 3 vector dimension must use `0006+`.
+
+**TODO(verify) resolved:**
+
+- Labelled NMI swallowed by ACCOUNT_NUMBER — fixed; GUARDRAILS gap #2 updated.
+- EspoCRM custom entities — created live as `EnergyProfile`, `SiteAssessment`, `GridConnection`, `Proposal` with the field names in `crm/espocrm_entities.md`.
+- API user + `X-Api-Key` — created; `GET /App/user` and upsert/search behaved as `voltdesk/crm/client.py` already assumed. `client.py` not edited.
+- Docker Espo env vars (`ESPOCRM_DATABASE_HOST`, admin user/password, `ESPOCRM_SITE_URL`) match current official Compose docs. Observed image: EspoCRM **10.0.6**.
+
+**TODO(verify) still open:**
+
+- NMI checksum rule — not invented.
+- VDO table licence — page is All Rights Reserved; not treated as a grant.
+- Public interval dataset — occupancy shape committed instead; physics not claimed as measured.
+- `espocrm/espocrm:latest` digest pin.
+- OpenAI/Anthropic model ids and prices (Phase 4).
+- Embedding dimension (Phase 3, `0006`).
+- NMI-to-DNSP mapping (Phase 3).
+- Remaining six Tier A corpus licences (Phase 3).
+
+**Traps I hit that PHASE_3.md should know about:**
+
+- Phase 2 consumed `0005` for document bytes. Vector dimension is **0006 or later**. Do not edit `0003`.
+- Espo 10.0.6 Field Manager varchar has no `unique` flag. Uniqueness is an entityDefs **index** (`voltdeskExternalKey` + `deleted`).
+- Entity Manager prefixes custom types with `C` unless `customPrefixDisabled` is true. VoltDesk names in mapping.py are unprefixed.
+- `LLMClient` first-call audit rows stay provider SUCCESS even when Pydantic then fails; repair is `SCHEMA_REPAIR`. Do not “fix” that by editing `voltdesk/llm/`.
+- Nested Docker in this cloud environment can start containers and still drop overlay TCP. Host ports and `docker compose exec` still work.
+
+**What I would tell the next model:** do not touch `voltdesk/llm/`, `voltdesk/audit/`, or `voltdesk/crm/client.py`. Set `customPrefixDisabled` before creating entities or mapping.py will 404. Number schema changes from 0006. A job that raises before `ExtractionFailed` must mark the document failed and enqueue review — never leave `status=extracting`. Do not invent NMI checksums or licences. Do not ingest a corpus document whose licence is still `TODO(verify)`.
