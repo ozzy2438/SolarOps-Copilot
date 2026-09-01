@@ -51,6 +51,4 @@ class DocumentParser(ABC):
 
     @abstractmethod
     def parse(self, document_id: str, content: bytes, filename: str) -> ParsedDocument:
-        raise NotImplementedError(
-            "DocumentParser.parse is implemented in Phase 2 (docs/PHASE_2.md, step 2)"
-        )
+        raise NotImplementedError("DocumentParser subclass must implement parse")

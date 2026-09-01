@@ -23,10 +23,11 @@ from voltdesk.synthetic import GeneratorConfig, SyntheticGenerator
 pytestmark = pytest.mark.phase2
 
 
-@pytest.mark.parametrize("parser", [BillParser(), SiteNotesParser(), EmailThreadParser()])
-def test_parsers_are_not_implemented(parser: object) -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        parser.parse("doc-1", b"", "f.pdf")  # type: ignore[attr-defined]
+def test_parsers_are_not_implemented() -> None:
+    parsed = BillParser().parse("doc-1", b"NMI 6305888444", "bill.txt")
+    assert parsed.pages[0].text
+    assert SiteNotesParser().parse("s", b"Roof: steel\n", "notes.txt").pages
+    assert EmailThreadParser().parse("e", b"Subject: hi\n\nHello", "t.txt").pages
 
 
 def test_extractor_is_not_implemented() -> None:

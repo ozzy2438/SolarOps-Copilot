@@ -1,5 +1,6 @@
 """Document parsers. Owned by Phase 2; contracts fixed in Phase 1."""
 
+from voltdesk.contracts.common import DocumentType
 from voltdesk.parsers.base import DocumentParser, ParsedDocument, ParsedPage
 from voltdesk.parsers.bill_parser import BillParser
 from voltdesk.parsers.email_parser import EmailThreadParser
@@ -12,4 +13,14 @@ __all__ = [
     "ParsedDocument",
     "ParsedPage",
     "SiteNotesParser",
+    "parser_for",
 ]
+
+
+def parser_for(document_type: DocumentType) -> DocumentParser:
+    mapping: dict[DocumentType, DocumentParser] = {
+        DocumentType.ELECTRICITY_BILL: BillParser(),
+        DocumentType.SITE_ASSESSMENT: SiteNotesParser(),
+        DocumentType.EMAIL_THREAD: EmailThreadParser(),
+    }
+    return mapping[document_type]
