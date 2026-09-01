@@ -21,7 +21,7 @@ from voltdesk.ingestion.embeddings import (
     store_chunks,
 )
 from voltdesk.retrieval.abstention import abstention_reason, support_score
-from voltdesk.retrieval.search import retrieve
+from voltdesk.retrieval.search import reciprocal_rank_fusion
 from voltdesk.retrieval.synthesis import synthesise, verify_citations
 
 pytestmark = pytest.mark.phase3
@@ -119,9 +119,21 @@ def test_corpus_ingestion_is_licence_gated_and_idempotent(
     assert ingest_path(str(path), CorpusSource.REGULATOR_METHODOLOGY, "Title", **kwargs) == 0
 
 
-def test_retrieval_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        retrieve(_query())
+def test_retrieval_fuses_lexical_and_vector_candidates() -> None:
+    chunk = Chunk(
+        chunk_id="chunk-1",
+        document_id="doc-1",
+        source=CorpusSource.REGULATOR_METHODOLOGY,
+        document_title="Title",
+        text="Clause 5.3 requires export control.",
+        section_path=["5.3 Export control"],
+        token_count=5,
+    )
+
+    result = reciprocal_rank_fusion([chunk], [chunk], top_k=1)
+
+    assert result[0].chunk == chunk
+    assert result[0].score == 1.0
 
 
 def test_synthesis_is_not_implemented() -> None:
