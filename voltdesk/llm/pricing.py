@@ -1,8 +1,6 @@
 """Model identities and per-token prices.
 
-Owned by: Phase 1. Fully implemented for Anthropic; OpenAI entries are marked
-TODO(verify) and must be confirmed before any cost number derived from them is
-published.
+Owned by: Phase 1 (table), Phase 4 (OpenAI verification and cache accounting).
 
 Cost is computed at call time and stored on the audit record. It is never
 recomputed at read time: a price change must not silently rewrite history.
@@ -51,29 +49,28 @@ ANTHROPIC_MODELS: dict[str, ModelPrice] = {
     ),
 }
 
-#: OpenAI pricing was NOT verified during Phase 1.
-#: TODO(verify): confirm both the model identifiers and the per-token prices against
-#: https://platform.openai.com/docs/pricing before Phase 4 publishes any Claude-vs-GPT
-#: cost comparison. Phase 4 must fail loudly rather than quote an unverified number -
-#: see `assert_verified` below.
+#: OpenAI model identities, context windows and standard text-token prices verified
+#: 2026-09-01 against the provider's model pages:
+#: https://developers.openai.com/api/docs/models/gpt-4o
+#: https://developers.openai.com/api/docs/models/gpt-4o-mini
 OPENAI_MODELS: dict[str, ModelPrice] = {
     "gpt-4o": ModelPrice(
         provider=Provider.OPENAI,
         model_id="gpt-4o",
-        input_usd_per_mtok=0.0,
-        output_usd_per_mtok=0.0,
+        input_usd_per_mtok=2.50,
+        output_usd_per_mtok=10.00,
         context_window=128_000,
-        verified=False,
-        note="TODO(verify): model id, prices and context window are placeholders.",
+        verified=True,
+        note="Verified 2026-09-01 against the official OpenAI GPT-4o model page.",
     ),
     "gpt-4o-mini": ModelPrice(
         provider=Provider.OPENAI,
         model_id="gpt-4o-mini",
-        input_usd_per_mtok=0.0,
-        output_usd_per_mtok=0.0,
+        input_usd_per_mtok=0.15,
+        output_usd_per_mtok=0.60,
         context_window=128_000,
-        verified=False,
-        note="TODO(verify): model id, prices and context window are placeholders.",
+        verified=True,
+        note="Verified 2026-09-01 against the official OpenAI GPT-4o Mini model page.",
     ),
 }
 
@@ -116,15 +113,36 @@ def assert_verified(model_id: str) -> None:
         )
 
 
-def compute_cost_usd(model_id: str, input_tokens: int, output_tokens: int) -> float:
-    """Cost of one call. Cache reads are billed at the input rate here.
+ANTHROPIC_CACHE_READ_MULTIPLIER = 0.10
+ANTHROPIC_CACHE_CREATION_MULTIPLIER = 1.25
 
-    TODO(verify): Anthropic bills cache reads at a discount to the base input rate.
-    Until that multiplier is confirmed, this over-estimates cached calls, which is the
-    safe direction for a cost ceiling but wrong for a cost report. Phase 4 owns fixing it.
+
+def compute_cost_usd(
+    model_id: str,
+    input_tokens: int,
+    output_tokens: int,
+    *,
+    cache_read_input_tokens: int = 0,
+    cache_creation_input_tokens: int = 0,
+) -> float:
+    """Cost one call from provider-reported token categories.
+
+    Anthropic documents cache reads at 0.1 times and five-minute cache writes at
+    1.25 times the base input rate. Those multipliers were verified 2026-09-01 at
+    https://platform.claude.com/docs/en/build-with-claude/prompt-caching.
+    Other providers currently report zero for these Anthropic-specific categories.
     """
     price = get_price(model_id)
-    return (
-        input_tokens * price.input_usd_per_mtok / 1_000_000
-        + output_tokens * price.output_usd_per_mtok / 1_000_000
-    )
+    input_cost = input_tokens * price.input_usd_per_mtok
+    if price.provider == Provider.ANTHROPIC:
+        input_cost += (
+            cache_read_input_tokens
+            * price.input_usd_per_mtok
+            * ANTHROPIC_CACHE_READ_MULTIPLIER
+        )
+        input_cost += (
+            cache_creation_input_tokens
+            * price.input_usd_per_mtok
+            * ANTHROPIC_CACHE_CREATION_MULTIPLIER
+        )
+    return (input_cost + output_tokens * price.output_usd_per_mtok) / 1_000_000
