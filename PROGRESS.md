@@ -41,17 +41,42 @@ prompts, extractor, confidence scoring, review queue, synthetic generator (Phase
 chunking, embeddings, corpus ingestion, retrieval, synthesis, abstention (Phase 3);
 evaluation runner and metrics (Phase 4).
 
-**Verification:** `make verify` clean — 75 tests passed, ruff clean, mypy clean across
+**Verification:** `make verify` clean — 78 tests passed, ruff clean, mypy clean across
 65 source files, no schema drift. Every stub raises `NotImplementedError` naming its
 phase (17 Phase 2, 9 Phase 3, 9 Phase 4); all three committed golden records validate
 against `GoldenRecord`.
 
-**Not verified, and Phase 2 should do it first thing:** `docker compose up` was never
-actually run. The Phase 1 environment had no reachable Docker daemon, so the compose
-file was only validated with `docker compose config` (which passes). The definition of
-done calls for the stack coming up with a green health endpoint — that remains
-unconfirmed. The most likely thing to be wrong is the EspoCRM service block, whose
-image tag and environment variables carry a `TODO(verify)`.
+**Verified against real infrastructure** (PostgreSQL 16.15 + pgvector 0.6.0 and Redis
+installed natively, not via Compose):
+
+- All four migrations execute cleanly in filename order, creating 9 tables across the
+  `app` and `vec` schemas. Re-running the whole directory is a no-op, which is the
+  idempotency claim in `migrations/README.md` — now tested, not asserted.
+- A model call driven through the real `LLMClient` (fake provider, everything else
+  real) writes an `app.model_calls` row. The hand-written INSERT matches the schema.
+  Both paths were exercised: a success, and a `ProviderError` that still produced its
+  audit row.
+- Cost computation is right: 1200 input + 340 output on `claude-opus-5` = $0.0145.
+- `/health/live` → 200. `/health/ready` → 503 naming the down dependency by name
+  (`espocrm: ok=false`, `llm_providers: usable=[]`), with `database` and `redis` green.
+- `/metrics` returns real aggregates over the audit rows.
+- Unimplemented routes return 501 naming their phase; a genuinely absent path returns
+  404. The two are distinguishable, which was the point.
+
+**One bug found and fixed by doing this.** `/metrics` returned `cost_usd` as the JSON
+*string* `"0.014500"` and `mean_latency_ms` as `"0E-20"` — PostgreSQL `NUMERIC` arrives
+as `Decimal` and FastAPI serialises it as a string. Phase 4 builds the metrics page on
+this endpoint and no chart can plot `"0E-20"`. Fixed in
+`voltdesk/api/routes/metrics.py`, pinned by `tests/test_metrics_serialisation.py`.
+This was invisible to the mocked test suite and only showed up against a real database.
+
+**Still not verified:** `docker compose up` end to end. This environment's network
+policy blocks Docker Hub's blob CDN (`production.cloudfront.docker.com` returns 403 to
+CONNECT) and ghcr.io as well, so no image could be pulled. `docker compose config`
+passes and the daemon runs, but the Dockerfile build, the service wiring and above all
+the **EspoCRM service block** — whose image tag and environment variables already carry
+a `TODO(verify)` — remain unconfirmed. Phase 2 should run it on a machine with normal
+registry access before anything else.
 
 **ADRs added:** 0001–0013. The ones a later phase is most likely to want to overturn:
 0003 (`extra="forbid"`), 0008 (unverified prices refuse to publish), 0010 (the router

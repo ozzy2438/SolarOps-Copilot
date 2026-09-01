@@ -49,9 +49,10 @@ curl -s localhost:8000/health/live     # {"status":"ok"}
 
 `localhost:8000/docs` is the full API surface. `localhost:8080` is EspoCRM.
 
-> The Compose file validates (`docker compose config`) but the stack has not yet been
-> brought up end to end — the Phase 1 environment had no Docker daemon. See
-> `PROGRESS.md`.
+> The Compose file validates and the migrations, audit path and API were verified
+> against a real PostgreSQL + pgvector and Redis. `docker compose up` itself has not
+> been run end to end — the Phase 1 environment could not reach Docker Hub. The
+> EspoCRM service block in particular is unconfirmed. See `PROGRESS.md`.
 
 To work on the code:
 
@@ -61,7 +62,7 @@ make install                  # pip install -e ".[dev]"
 make verify                   # ruff + mypy + pytest + schema drift check
 ```
 
-Expected on a clean checkout: **75 passed**, ruff clean, mypy clean across 65 files.
+Expected on a clean checkout: **78 passed**, ruff clean, mypy clean across 65 files.
 The whole suite runs with no network, no database and no API keys — a test that needs
 one of those is a test that gets skipped in CI, and therefore not a test.
 

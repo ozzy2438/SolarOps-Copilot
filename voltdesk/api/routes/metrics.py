@@ -9,6 +9,7 @@ store.
 
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Any
 
 from fastapi import APIRouter, Query
@@ -48,6 +49,15 @@ _REDACTION = text(
 )
 
 
+def _jsonable(value: Any) -> Any:
+    """PostgreSQL NUMERIC arrives as Decimal, which serialises to a JSON *string*
+    (and to scientific notation like "0E-20" for an averaged zero). Every consumer
+    of this endpoint - including Phase 4's metrics page - wants numbers, so coerce
+    here rather than making each of them do it.
+    """
+    return float(value) if isinstance(value, Decimal) else value
+
+
 @router.get("")
 def metrics(hours: int = Query(default=24, ge=1, le=24 * 30)) -> dict[str, Any]:
     """Per task type and model, over a trailing window."""
@@ -58,7 +68,7 @@ def metrics(hours: int = Query(default=24, ge=1, le=24 * 30)) -> dict[str, Any]:
 
     return {
         "window_hours": hours,
-        "by_task": [dict(row) for row in rows],
+        "by_task": [{k: _jsonable(v) for k, v in row.items()} for row in rows],
         "totals": {
             "calls": sum(row["calls"] for row in rows),
             "cost_usd": float(sum(row["cost_usd"] or 0 for row in rows)),
