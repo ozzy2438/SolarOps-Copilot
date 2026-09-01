@@ -19,6 +19,16 @@ import re
 
 from voltdesk.redaction.base import RedactionResult, Redactor
 
+#: Labelled NMIs must survive every digit pattern. An NMI is 10 or 11 characters
+#: (ADR-0009); the checksum rule is still TODO(verify) and is not enforced here.
+#: Python's `re` cannot do variable-length lookbehind, so labelled NMIs are
+#: lifted out, the remaining text is redacted, then they are put back.
+_NMI_LABELLED = re.compile(
+    r"(?P<label>\b(?:National\s+Metering\s+Identifier|NMI)\s*[:#-]?\s*)"
+    r"(?P<nmi>[A-Za-z0-9]{10,11})\b",
+    re.IGNORECASE,
+)
+
 #: (entity type, compiled pattern). Order matters: more specific patterns first, so
 #: that an email is not partially consumed by the phone-number pattern.
 _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
@@ -57,6 +67,15 @@ class RegexRedactor(Redactor):
         # number 5 times produces one placeholder, and the prompt stays cacheable.
         seen: dict[tuple[str, str], str] = {}
 
+        protected: list[str] = []
+
+        def _protect(match: re.Match[str]) -> str:
+            protected.append(match.group(0))
+            # No digit run of 8-12, no @, no street-type suffix.
+            return f"<<NMIHOLD:{len(protected) - 1}>>"
+
+        text = _NMI_LABELLED.sub(_protect, text)
+
         for entity_type, pattern in _PATTERNS:
 
             def _replace(match: re.Match[str], _t: str = entity_type) -> str:
@@ -71,5 +90,9 @@ class RegexRedactor(Redactor):
                 return placeholder
 
             text = pattern.sub(_replace, text)
+
+        # Highest index first so that NMIHOLD:1 does not corrupt NMIHOLD:10.
+        for index in range(len(protected) - 1, -1, -1):
+            text = text.replace(f"<<NMIHOLD:{index}>>", protected[index])
 
         return RedactionResult(text=text, entity_counts=counts, reversal_map=reversal)
