@@ -1,0 +1,111 @@
+{
+  "source": {
+    "name": "Victorian Default Offer 2026-27 small-business standing offers",
+    "url": "https://www.esc.vic.gov.au/electricity-and-gas/prices-tariffs-and-benchmarks/victorian-default-offer",
+    "retrieved_at": "2026-09-01",
+    "period": "2026-07-01/2027-06-30",
+    "licence": "TODO(verify): ESC page is All Rights Reserved; redistribution terms unconfirmed."
+  },
+  "tariffs": [
+    {
+      "id": "vdo-sb-flat-ausnet",
+      "tariff_type": "flat",
+      "tariff_code": "VDO-SB-FLAT-AUSNET",
+      "distribution_zone": "AusNet Services",
+      "gst_inclusive": true,
+      "daily_supply_aud": 1.2939,
+      "usage_aud_per_kwh": 0.3423
+    },
+    {
+      "id": "vdo-sb-flat-citipower",
+      "tariff_type": "flat",
+      "tariff_code": "VDO-SB-FLAT-CITIPOWER",
+      "distribution_zone": "CitiPower",
+      "gst_inclusive": true,
+      "daily_supply_aud": 1.5219,
+      "usage_aud_per_kwh": 0.2477
+    },
+    {
+      "id": "vdo-sb-flat-jemena",
+      "tariff_type": "flat",
+      "tariff_code": "VDO-SB-FLAT-JEMENA",
+      "distribution_zone": "Jemena",
+      "gst_inclusive": true,
+      "daily_supply_aud": 1.6709,
+      "usage_aud_per_kwh": 0.2878
+    },
+    {
+      "id": "vdo-sb-flat-powercor",
+      "tariff_type": "flat",
+      "tariff_code": "VDO-SB-FLAT-POWERCOR",
+      "distribution_zone": "Powercor",
+      "gst_inclusive": true,
+      "daily_supply_aud": 1.6978,
+      "usage_aud_per_kwh": 0.2736
+    },
+    {
+      "id": "vdo-sb-flat-united",
+      "tariff_type": "flat",
+      "tariff_code": "VDO-SB-FLAT-UNITED",
+      "distribution_zone": "United Energy",
+      "gst_inclusive": true,
+      "daily_supply_aud": 1.5400,
+      "usage_aud_per_kwh": 0.2561
+    },
+    {
+      "id": "vdo-sb-tou-ausnet",
+      "tariff_type": "time_of_use",
+      "tariff_code": "VDO-SB-TOU-AUSNET",
+      "distribution_zone": "AusNet Services",
+      "gst_inclusive": true,
+      "daily_supply_aud": 1.2939,
+      "peak_window": "9am-9pm weekdays",
+      "peak_aud_per_kwh": 0.379,
+      "offpeak_aud_per_kwh": 0.195
+    },
+    {
+      "id": "vdo-sb-tou-citipower",
+      "tariff_type": "time_of_use",
+      "tariff_code": "VDO-SB-TOU-CITIPOWER",
+      "distribution_zone": "CitiPower",
+      "gst_inclusive": true,
+      "daily_supply_aud": 1.5219,
+      "peak_window": "9am-9pm weekdays",
+      "peak_aud_per_kwh": 0.3089,
+      "offpeak_aud_per_kwh": 0.1752
+    },
+    {
+      "id": "vdo-sb-tou-jemena",
+      "tariff_type": "time_of_use",
+      "tariff_code": "VDO-SB-TOU-JEMENA",
+      "distribution_zone": "Jemena",
+      "gst_inclusive": true,
+      "daily_supply_aud": 1.6818,
+      "peak_window": "9am-9pm weekdays",
+      "peak_aud_per_kwh": 0.3331,
+      "offpeak_aud_per_kwh": 0.179
+    },
+    {
+      "id": "vdo-sb-tou-powercor",
+      "tariff_type": "time_of_use",
+      "tariff_code": "VDO-SB-TOU-POWERCOR",
+      "distribution_zone": "Powercor",
+      "gst_inclusive": true,
+      "daily_supply_aud": 1.6978,
+      "peak_window": "9am-9pm weekdays",
+      "peak_aud_per_kwh": 0.3629,
+      "offpeak_aud_per_kwh": 0.1921
+    },
+    {
+      "id": "vdo-sb-tou-united",
+      "tariff_type": "time_of_use",
+      "tariff_code": "VDO-SB-TOU-UNITED",
+      "distribution_zone": "United Energy",
+      "gst_inclusive": true,
+      "daily_supply_aud": 1.54,
+      "peak_window": "9am-9pm weekdays",
+      "peak_aud_per_kwh": 0.3156,
+      "offpeak_aud_per_kwh": 0.1807
+    }
+  ]
+}

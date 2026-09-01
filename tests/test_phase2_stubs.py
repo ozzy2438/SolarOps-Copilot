@@ -8,6 +8,8 @@ test — not deleted. A disappearing test is indistinguishable from a forgotten 
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from voltdesk.contracts.common import DocumentType
@@ -53,9 +55,17 @@ def test_review_queue_is_not_implemented() -> None:
         ReviewQueue().list_pending()
 
 
-def test_synthetic_generator_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        SyntheticGenerator(GeneratorConfig(seed=1)).generate()
+def test_synthetic_generator_is_not_implemented(tmp_path: Path) -> None:
+    docs = SyntheticGenerator(
+        GeneratorConfig(
+            seed=1,
+            bill_count=1,
+            site_assessment_count=1,
+            email_thread_count=1,
+            output_dir=str(tmp_path),
+        )
+    ).generate()
+    assert len(docs) == 3
 
 
 def test_generator_config_is_reproducible_by_construction() -> None:
