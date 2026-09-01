@@ -22,6 +22,7 @@ from urllib.parse import quote
 import httpx
 
 from voltdesk.config import get_settings
+from voltdesk.contracts.common import StrictModel
 from voltdesk.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -29,6 +30,20 @@ logger = get_logger(__name__)
 #: EspoCRM custom field used as VoltDesk's idempotency key on every entity.
 #: Defined in crm/espocrm_entities.md; must exist in the instance.
 EXTERNAL_KEY_FIELD = "voltdeskExternalKey"
+
+
+class CrmHealth(StrictModel):
+    """What a readiness probe found. Three separate facts, because they have three
+    different fixes and a single boolean told the operator none of them."""
+
+    configured: bool
+    reachable: bool
+    authenticated: bool
+    detail: str
+
+    @property
+    def ok(self) -> bool:
+        return self.configured and self.reachable and self.authenticated
 
 
 class CrmError(RuntimeError):
@@ -233,10 +248,75 @@ class EspoCrmClient:
         )
         return self.update(entity_type, record_id, body), False
 
-    def health(self) -> bool:
-        """Cheap reachability probe for the readiness endpoint. Never raises."""
+    def is_configured(self) -> bool:
+        """False when no API key is set. That is a configuration state, not an outage:
+        an EspoCRM API user has to be created by hand (crm/espocrm_entities.md), so a
+        fresh checkout legitimately has no key yet."""
+        return bool(self._api_key)
+
+    def health(self, timeout: float = 3.0) -> CrmHealth:
+        """Bounded readiness probe. Never raises, never retries.
+
+        Deliberately does NOT go through `_request`. That path retries three times with
+        exponential backoff on a 30s timeout, so an unreachable CRM would block
+        /health/ready for over a minute - useless in a readiness probe, which has to
+        answer while someone is still looking at it.
+
+        Distinguishes three states that a bare boolean collapsed into one:
+        unconfigured, unreachable, and reachable-but-rejected. They have different
+        fixes, so the probe has to name which one it found.
+        """
+        if not self.is_configured():
+            return CrmHealth(
+                configured=False,
+                reachable=False,
+                authenticated=False,
+                detail=(
+                    "no API key configured (VOLTDESK_ESPOCRM_API_KEY is empty). Create "
+                    "an EspoCRM API user and set the key - see crm/espocrm_entities.md. "
+                    "Until then the CRM write path is unavailable."
+                ),
+            )
+
         try:
-            self._request("GET", "/App/user")
-        except CrmError:
-            return False
-        return True
+            response = self._client.request("GET", "/App/user", timeout=timeout)
+        except httpx.TimeoutException:
+            return CrmHealth(
+                configured=True,
+                reachable=False,
+                authenticated=False,
+                detail=f"no response from {self._base_url} within {timeout:g}s",
+            )
+        except httpx.TransportError as exc:
+            return CrmHealth(
+                configured=True,
+                reachable=False,
+                authenticated=False,
+                detail=f"cannot reach {self._base_url}: {exc}",
+            )
+
+        if response.status_code in (401, 403):
+            return CrmHealth(
+                configured=True,
+                reachable=True,
+                authenticated=False,
+                detail=(
+                    f"EspoCRM answered {response.status_code}: it is running, but it "
+                    f"rejected the API key. Check the API user exists and is active, "
+                    f"and that its ACL grants access."
+                ),
+            )
+        if response.status_code >= 400:
+            return CrmHealth(
+                configured=True,
+                reachable=True,
+                authenticated=False,
+                detail=(
+                    f"EspoCRM answered {response.status_code} to GET /api/v1/App/user. "
+                    f"The instance is reachable but did not accept the request."
+                ),
+            )
+
+        return CrmHealth(
+            configured=True, reachable=True, authenticated=True, detail="ok"
+        )

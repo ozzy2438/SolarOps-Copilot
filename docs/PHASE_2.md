@@ -124,6 +124,15 @@ Each is a command and its expected output.
       writes nothing
 - [ ] `curl -s -X POST localhost:8000/documents -F document_type=electricity_bill -F file=@... -o /dev/null -w '%{http_code}'` → `202`
 - [ ] `curl -s localhost:8000/review | jq '.items | length'` → a number, not a 501
+- [ ] EspoCRM is configured and healthy — you created the API user, set
+      `VOLTDESK_ESPOCRM_API_KEY`, and created the custom entities:
+      `curl -s localhost:8000/health/ready | jq '.checks.espocrm'` →
+      `{"ok": true, "configured": true, "reachable": true, "detail": "ok"}`
+- [ ] Tighten the readiness verdict: with the CRM write path implemented, an
+      unconfigured EspoCRM is no longer acceptable. Make `espocrm` count towards the
+      verdict rather than being excluded as unconfigured, and update
+      `tests/test_api.py::test_unconfigured_espocrm_does_not_make_the_service_degraded`
+      to assert the new rule.
 - [ ] `docker compose exec -T postgres psql -U voltdesk -d voltdesk -c "SELECT count(*) FROM app.model_calls"` →
       one row per model call made, including failures
 - [ ] `grep -rn --include="*.py" -A1 "raise NotImplementedError" voltdesk/ | grep "Phase 2"` → no output

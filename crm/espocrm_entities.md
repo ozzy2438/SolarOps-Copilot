@@ -131,11 +131,38 @@ wrong silently attaches one customer's bill to another customer.
 
 ## API user setup
 
-1. Administration → API Users → create an API user.
-2. Authentication method: **API Key**. The key goes in `VOLTDESK_ESPOCRM_API_KEY` and
-   is sent as the `X-Api-Key` header.
-3. Grant read/write on the four custom entities and read on `Account`. Nothing else —
+Until this is done, `/health/ready` reports
+`espocrm: {"configured": false, ...}` and lists it under `unconfigured`. That is the
+expected state of a fresh checkout, not a fault — VoltDesk cannot create an EspoCRM API
+user for itself.
+
+1. Open EspoCRM (http://localhost:8080 by default) and complete its installer if this is
+   the first boot. The container needs a minute or two before it answers.
+2. Log in as admin, then Administration → API Users → create an API user.
+3. Authentication method: **API Key**. Copy the generated key into
+   `VOLTDESK_ESPOCRM_API_KEY` in `.env`; it is sent as the `X-Api-Key` header.
+4. Grant read/write on the four custom entities and read on `Account`. Nothing else —
    VoltDesk has no reason to touch anything it does not write.
+5. Create the custom entities and fields described above (Administration → Entity
+   Manager). The API user's payloads will be rejected with `CrmValidationError` until
+   they exist.
+6. `docker compose up -d api` to pick up the new key, then confirm:
+
+   ```bash
+   curl -s localhost:8000/health/ready | jq '.checks.espocrm'
+   ```
+
+   Expected once it is working: `{"ok": true, "configured": true, "reachable": true,
+   "detail": "ok"}`.
+
+   The `detail` field tells you which step is still missing:
+
+   | detail says | What to fix |
+   |---|---|
+   | `no API key configured` | Step 3 — the key is not in `.env`, or the API container did not pick it up |
+   | `answered 401` / `403` | The key is wrong, the API user is inactive, or its ACL denies access |
+   | `cannot reach ...` | EspoCRM is not running, or `VOLTDESK_ESPOCRM_BASE_URL` is wrong (inside Compose it must be `http://espocrm`, not `localhost`) |
+   | `answered 404` | Reachable, but the path was rejected — check the instance is fully installed |
 
 **`TODO(verify)`** — confirm against
 <https://docs.espocrm.com/development/api/> that API-key authentication and the

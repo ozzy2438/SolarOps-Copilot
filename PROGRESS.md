@@ -41,7 +41,7 @@ prompts, extractor, confidence scoring, review queue, synthetic generator (Phase
 chunking, embeddings, corpus ingestion, retrieval, synthesis, abstention (Phase 3);
 evaluation runner and metrics (Phase 4).
 
-**Verification:** `make verify` clean — 80 tests passed, ruff clean, mypy clean across
+**Verification:** `make verify` clean — 90 tests passed, ruff clean, mypy clean across
 65 source files, no schema drift. Every stub raises `NotImplementedError` naming its
 phase (17 Phase 2, 9 Phase 3, 9 Phase 4); all three committed golden records validate
 against `GoldenRecord`.
@@ -129,7 +129,42 @@ PostgreSQL on 5432: an unconfigured VoltDesk reports
 Failing to resolve a hostname is loud and harmless; writing into the wrong database is
 neither. Pinned by `tests/test_config.py`.
 
-**Still not verified:** `docker compose up` end to end. This environment's network
+**Fourth round: the stack came up, and `/health/ready` said `espocrm: {"ok": false}`
+with no reason.** Diagnosed to four defects, all in Phase 1's own code:
+
+1. `EspoCrmClient.health()` returned a bare bool, discarding why it failed — while the
+   database and redis checks reported their error. `docs/ARCHITECTURE.md` promises this
+   endpoint "names which dependency failed"; for the CRM it named the dependency and
+   not the failure.
+2. The probe called `GET /App/user`, which requires authentication, and
+   `VOLTDESK_ESPOCRM_API_KEY` ships empty because an EspoCRM API user has to be created
+   by hand. So a correct, fresh install was guaranteed to report a failure. **This was
+   the reviewer's actual cause.**
+3. The probe went through `_request`, which retries three times with backoff on a 30s
+   timeout. An unreachable CRM could have blocked `/health/ready` for ~93s — useless in
+   a readiness probe.
+4. The verdict counted an unconfigured integration as an outage, contradicting the
+   comment already sitting next to the `llm_providers` check ("No key configured is a
+   valid local state, not an outage") whose code did the same thing.
+
+Fixed: `health()` returns a structured `CrmHealth` (`configured` / `reachable` /
+`authenticated` / `detail`) from a single bounded request with a 3s timeout and no
+retries. `/health/ready` now separates `failing` from `unconfigured`; only a dependency
+that is configured *and* failing produces 503. A 401 is reported as reachable-but-
+rejected, because a 401 means EspoCRM is up and sending the operator to check whether
+it is running wastes their time.
+
+Verified live in all three states: unconfigured → HTTP 200 `status: ok` with the CRM
+listed under `unconfigured` and a detail naming the fix; configured but unreachable →
+HTTP 503 in **296 ms**; rejected key → reachable, unauthenticated, status code in the
+detail. 10 new tests.
+
+`crm/espocrm_entities.md` gained the full API-user setup sequence and a table mapping
+each `detail` string to what to fix. `docs/PHASE_2.md` gained two acceptance criteria:
+configure EspoCRM for real, and tighten this verdict once the CRM write path exists —
+at that point an unconfigured CRM *should* fail readiness.
+
+**Still not verified by me:** `docker compose up` end to end. This environment's network
 policy blocks Docker Hub's blob CDN (`production.cloudfront.docker.com` returns 403 to
 CONNECT) and ghcr.io as well, so no image could be pulled. `docker compose config`
 passes and the daemon runs, but the Dockerfile build, the service wiring and above all

@@ -33,7 +33,8 @@ def live() -> dict[str, str]:
 
 @router.get("/ready")
 def ready(response: Response) -> dict[str, Any]:
-    """Readiness. Degraded is reported as 503 with per-dependency detail."""
+    """Readiness. A configured dependency that is failing gives 503 with detail."""
+    settings = get_settings()
     checks: dict[str, Any] = {}
 
     try:
@@ -46,28 +47,65 @@ def ready(response: Response) -> dict[str, Any]:
     try:
         import redis
 
-        redis.Redis.from_url(get_settings().redis_url).ping()
+        redis.Redis.from_url(settings.redis_url).ping()
         checks["redis"] = {"ok": True}
     except Exception as exc:  # noqa: BLE001
         checks["redis"] = {"ok": False, "error": str(exc)[:200]}
 
     try:
         with EspoCrmClient() as crm:
-            checks["espocrm"] = {"ok": crm.health()}
+            crm_health = crm.health()
+        checks["espocrm"] = {
+            "ok": crm_health.ok,
+            "configured": crm_health.configured,
+            "reachable": crm_health.reachable,
+            "detail": crm_health.detail,
+        }
     except Exception as exc:  # noqa: BLE001
-        checks["espocrm"] = {"ok": False, "error": str(exc)[:200]}
+        checks["espocrm"] = {
+            "ok": False,
+            "configured": True,
+            "reachable": False,
+            "detail": f"health probe failed: {exc}"[:200],
+        }
 
     registry = ProviderRegistry()
+    usable = [str(p) for p in registry.usable_providers()]
     checks["llm_providers"] = {
-        "usable": [str(p) for p in registry.usable_providers()],
-        # No key configured is a valid local state, not an outage. Only report not-ok
-        # when neither provider can be reached at all.
-        "ok": bool(registry.usable_providers()),
+        "ok": bool(usable),
+        "configured": settings.has_anthropic() or settings.has_openai(),
+        "usable": usable,
+        "detail": (
+            ", ".join(usable) + " usable"
+            if usable
+            else "no provider key configured; model calls are unavailable"
+        ),
     }
 
-    healthy = all(
-        check.get("ok", False) for check in checks.values() if isinstance(check, dict)
+    # A dependency nobody has configured yet is not an outage. VoltDesk ships with no
+    # EspoCRM API key and no provider keys - an EspoCRM API user has to be created by
+    # hand - and reporting a fresh, correct install as 503 trains people to ignore this
+    # endpoint. Unconfigured dependencies are reported in full and listed separately,
+    # but they do not decide the verdict; a dependency that IS configured and failing
+    # does.
+    #
+    # Phase 2 owns tightening this: once the CRM write path exists, espocrm must be
+    # configured, and an unconfigured CRM becomes a genuine readiness failure.
+    unconfigured = sorted(
+        name for name, check in checks.items() if not check.get("configured", True)
     )
-    if not healthy:
+    failing = sorted(
+        name
+        for name, check in checks.items()
+        if check.get("configured", True) and not check.get("ok", False)
+    )
+
+    if failing:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-    return {"status": "ok" if healthy else "degraded", "checks": checks}
+
+    return {
+        "status": "degraded" if failing else "ok",
+        "failing": failing,
+        "unconfigured": unconfigured,
+        "checks": checks,
+    }

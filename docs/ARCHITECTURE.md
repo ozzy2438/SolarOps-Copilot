@@ -94,7 +94,9 @@ VoltDesk never touches the EspoCRM database. Only the REST API.
 | Model returns invalid JSON | Caught as `ValidationError`, one repair attempt, then review queue. Audited as `schema_invalid`. |
 | Model refuses (safety classifier) | HTTP 200 with `stop_reason="refusal"`. Detected explicitly, audited as `refusal`, never treated as an empty answer. |
 | Extraction is low-confidence | Review queue. Nothing below the threshold reaches the CRM. |
-| CRM unreachable | Job retries; the extraction is already persisted, so nothing is lost. Typed `CrmUnavailableError` distinguishes it from a bad payload. |
+| CRM unreachable | Job retries; the extraction is already persisted, so nothing is lost. Typed `CrmUnavailableError` distinguishes it from a bad payload. `/health/ready` reports it as reachable=false with the connection error. |
+| CRM configured but rejecting the key | Reported as `reachable: true, authenticated: false` with the status code. A 401 means EspoCRM is *up* — reporting that as "down" sends the operator to look at the wrong thing. |
+| CRM not configured at all | Reported as `configured: false` and listed under `unconfigured`. Not a readiness failure: no EspoCRM API key exists until someone creates an API user by hand, and reporting a correct fresh install as 503 trains people to ignore the endpoint. Phase 2 tightens this once the write path exists. |
 | CRM rejects the payload | `CrmValidationError` — not retried, because retrying a 400 hides the real problem (usually a custom field missing from the instance). |
 | Duplicate external key in the CRM | Refused rather than resolved arbitrarily. Two records sharing an external key means the uniqueness constraint is missing. |
 | Database down | The API's `/health/ready` reports which dependency failed. Audit writes fail soft — the structured log line survives — because losing an audit row is bad but failing a customer document because the audit table is unreachable is worse. |
