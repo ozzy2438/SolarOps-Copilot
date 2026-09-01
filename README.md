@@ -49,6 +49,37 @@ curl -s localhost:8000/health/live     # {"status":"ok"}
 
 `localhost:8000/docs` is the full API surface. `localhost:8080` is EspoCRM.
 
+`make down` stops the stack and keeps its data. Deleting VoltDesk's volumes is a
+separate, confirmed command (`make destroy`).
+
+### If a port is already in use
+
+The Compose stack publishes PostgreSQL on host port **55432** and Redis on **56379**,
+not their standard 5432 and 6379. That is deliberate: a developer machine often
+already runs one of those, and VoltDesk should never compete with it for a port.
+
+If you still get `Bind for 0.0.0.0:<port> failed: port is already allocated`, change
+the number in `.env` — never stop the service that already holds the port:
+
+```bash
+VOLTDESK_POSTGRES_HOST_PORT=55433    # or any free port
+VOLTDESK_REDIS_HOST_PORT=56380
+VOLTDESK_API_HOST_PORT=8001
+VOLTDESK_ESPOCRM_HOST_PORT=8081
+```
+
+These are host ports only. Inside the stack, `api` and `worker` always reach the
+database at `postgres:5432`, whatever you set here. If you change the Postgres or
+Redis host port, update `VOLTDESK_DATABASE_URL` / `VOLTDESK_REDIS_URL` in `.env` to
+match — those are what a host-side `psql` or test run connects to.
+
+To see what holds a port before changing anything:
+
+```bash
+lsof -nP -iTCP:5432 -sTCP:LISTEN      # macOS/Linux, read-only
+docker ps --format '{{.Names}}\t{{.Ports}}' | grep 5432
+```
+
 > The Compose file validates and the migrations, audit path and API were verified
 > against a real PostgreSQL + pgvector and Redis. `docker compose up` itself has not
 > been run end to end — the Phase 1 environment could not reach Docker Hub. The
@@ -62,7 +93,7 @@ make install                  # pip install -e ".[dev]"
 make verify                   # ruff + mypy + pytest + schema drift check
 ```
 
-Expected on a clean checkout: **78 passed**, ruff clean, mypy clean across 65 files.
+Expected on a clean checkout: **79 passed**, ruff clean, mypy clean across 65 files.
 The whole suite runs with no network, no database and no API keys — a test that needs
 one of those is a test that gets skipped in CI, and therefore not a test.
 

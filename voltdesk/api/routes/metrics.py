@@ -26,11 +26,11 @@ _SUMMARY = text(
         model_id,
         COUNT(*)                                        AS calls,
         SUM(CASE WHEN outcome = 'success' THEN 1 ELSE 0 END) AS successes,
-        SUM(cost_usd)                                   AS cost_usd,
+        COALESCE(SUM(cost_usd), 0)                      AS cost_usd,
         AVG(latency_ms)                                 AS mean_latency_ms,
         PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency_ms) AS p95_latency_ms,
-        SUM(input_tokens)                               AS input_tokens,
-        SUM(output_tokens)                              AS output_tokens
+        COALESCE(SUM(input_tokens), 0)                  AS input_tokens,
+        COALESCE(SUM(output_tokens), 0)                 AS output_tokens
     FROM app.model_calls
     WHERE occurred_at >= NOW() - CAST(:window AS interval)
     GROUP BY task_type, model_id
@@ -42,7 +42,10 @@ _REDACTION = text(
     """
     SELECT
         COUNT(*)                                                  AS calls,
-        SUM(CASE WHEN redaction_applied THEN 1 ELSE 0 END)        AS redacted_calls
+        -- COALESCE because SUM over zero rows is NULL while COUNT is 0. An empty
+        -- window would otherwise report calls=0 alongside redacted_calls=null, and
+        -- anything computing a coverage ratio from the pair breaks on it.
+        COALESCE(SUM(CASE WHEN redaction_applied THEN 1 ELSE 0 END), 0) AS redacted_calls
     FROM app.model_calls
     WHERE occurred_at >= NOW() - CAST(:window AS interval)
     """

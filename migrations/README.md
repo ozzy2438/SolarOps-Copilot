@@ -24,5 +24,7 @@ an existing database:
 for f in migrations/*.sql; do psql "$VOLTDESK_DATABASE_URL" -f "$f"; done
 ```
 
-`docker compose down -v` drops the volume, so the next `up` re-applies everything from
-scratch. That is the intended way to pick up a new migration locally.
+To pick up a new migration locally you can either apply it with the loop above, or
+start from an empty volume with `make destroy && make up`. **`make destroy` deletes
+VoltDesk's postgres and espocrm volumes and everything in them** — it prompts for
+confirmation for that reason. `make down` only stops the stack and keeps the data.

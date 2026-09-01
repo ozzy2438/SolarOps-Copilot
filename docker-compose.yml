@@ -7,7 +7,11 @@ services:
       POSTGRES_USER: voltdesk
       POSTGRES_PASSWORD: voltdesk
       POSTGRES_DB: voltdesk
-    ports: ["5432:5432"]
+    # Host port only. Containers reach this at postgres:5432 over the compose
+    # network regardless. The default is deliberately NOT 5432: a developer
+    # machine very often already has PostgreSQL on it, and VoltDesk must not
+    # compete with it for the port. Override with VOLTDESK_POSTGRES_HOST_PORT.
+    ports: ["${VOLTDESK_POSTGRES_HOST_PORT:-55432}:5432"]
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./migrations:/docker-entrypoint-initdb.d:ro
@@ -19,7 +23,8 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports: ["6379:6379"]
+    # Same reasoning as postgres: 6379 is commonly already taken locally.
+    ports: ["${VOLTDESK_REDIS_HOST_PORT:-56379}:6379"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -50,7 +55,7 @@ services:
       ESPOCRM_ADMIN_USERNAME: admin
       ESPOCRM_ADMIN_PASSWORD: admin_password_change_me
       ESPOCRM_SITE_URL: http://localhost:8080
-    ports: ["8080:80"]
+    ports: ["${VOLTDESK_ESPOCRM_HOST_PORT:-8080}:80"]
     depends_on: [espocrm-db]
 
   api:
@@ -60,8 +65,12 @@ services:
       VOLTDESK_DATABASE_URL: postgresql+psycopg://voltdesk:voltdesk@postgres:5432/voltdesk
       VOLTDESK_REDIS_URL: redis://redis:6379/0
       VOLTDESK_ESPOCRM_BASE_URL: http://espocrm
-    env_file: [.env]
-    ports: ["8000:8000"]
+    # Optional: a missing .env falls back to the ${VAR:-default} values above
+    # rather than refusing to start the stack.
+    env_file:
+      - path: .env
+        required: false
+    ports: ["${VOLTDESK_API_HOST_PORT:-8000}:8000"]
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
@@ -73,7 +82,11 @@ services:
       VOLTDESK_DATABASE_URL: postgresql+psycopg://voltdesk:voltdesk@postgres:5432/voltdesk
       VOLTDESK_REDIS_URL: redis://redis:6379/0
       VOLTDESK_ESPOCRM_BASE_URL: http://espocrm
-    env_file: [.env]
+    # Optional: a missing .env falls back to the ${VAR:-default} values above
+    # rather than refusing to start the stack.
+    env_file:
+      - path: .env
+        required: false
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}

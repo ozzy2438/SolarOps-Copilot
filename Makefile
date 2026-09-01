@@ -1,4 +1,4 @@
-.PHONY: help up down logs install test lint typecheck schemas verify
+.PHONY: help up down destroy logs install test lint typecheck schemas verify
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -6,7 +6,13 @@ help:
 up:  ## Bring up the full local stack (postgres+pgvector, redis, espocrm, api, worker)
 	docker compose up -d --build
 
-down:  ## Tear the stack down
+down:  ## Stop the stack. Volumes and their data are KEPT.
+	docker compose down
+
+destroy:  ## Stop the stack AND DELETE its volumes (pgdata, espodata). Irreversible.
+	@echo "This deletes the voltdesk postgres and espocrm volumes and everything in them."
+	@echo "Only VoltDesk's own volumes - nothing else on this machine is touched."
+	@printf "Type 'destroy' to confirm: " && read ans && [ "$$ans" = "destroy" ]
 	docker compose down -v
 
 logs:  ## Follow API logs

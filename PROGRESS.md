@@ -41,7 +41,7 @@ prompts, extractor, confidence scoring, review queue, synthetic generator (Phase
 chunking, embeddings, corpus ingestion, retrieval, synthesis, abstention (Phase 3);
 evaluation runner and metrics (Phase 4).
 
-**Verification:** `make verify` clean — 78 tests passed, ruff clean, mypy clean across
+**Verification:** `make verify` clean — 79 tests passed, ruff clean, mypy clean across
 65 source files, no schema drift. Every stub raises `NotImplementedError` naming its
 phase (17 Phase 2, 9 Phase 3, 9 Phase 4); all three committed golden records validate
 against `GoldenRecord`.
@@ -69,6 +69,33 @@ as `Decimal` and FastAPI serialises it as a string. Phase 4 builds the metrics p
 this endpoint and no chart can plot `"0E-20"`. Fixed in
 `voltdesk/api/routes/metrics.py`, pinned by `tests/test_metrics_serialisation.py`.
 This was invisible to the mocked test suite and only showed up against a real database.
+
+**Second round, after a port collision on the reviewer's machine.** `docker compose up`
+failed there with `Bind for 0.0.0.0:5432 failed: port is already allocated` — a
+pre-existing PostgreSQL owned the port. Three changes, none of which touch anything
+outside VoltDesk:
+
+- Every published host port is now `${VAR:-default}` overridable, and the Postgres and
+  Redis defaults moved off the standard ports to **55432** and **56379**. A developer
+  machine usually already runs one of those, and VoltDesk should never compete for a
+  port it does not need — container-to-container traffic still uses `postgres:5432`
+  over the Compose network and is unaffected.
+- `.env` is now `required: false`, so a missing file falls back to those defaults
+  instead of refusing to start the stack. Verified both ways.
+- **`make down` no longer deletes volumes.** It was `docker compose down -v`, which
+  destroys `pgdata` and `espodata` — an unpleasant thing to find behind a target named
+  "down". Destruction moved to `make destroy`, which names what it deletes and requires
+  typing the word to confirm.
+
+Verified by running two PostgreSQL clusters side by side (5432 and 55432): migrations
+applied to 55432 only, the API booted against `.env.example`'s URL verbatim and
+reported an empty database, and the cluster on 5432 kept its rows.
+
+**A second bug found this way.** On a freshly migrated, empty database `/metrics`
+returned `calls: 0` alongside `redacted_calls: null` — `SUM` over zero rows is NULL in
+SQL while `COUNT` is 0, so anything computing a redaction coverage ratio divides by
+null. Every `SUM` in the metrics queries is now `COALESCE`'d, pinned by a test. Like
+the Decimal bug, invisible to the mocked suite.
 
 **Still not verified:** `docker compose up` end to end. This environment's network
 policy blocks Docker Hub's blob CDN (`production.cloudfront.docker.com` returns 403 to
