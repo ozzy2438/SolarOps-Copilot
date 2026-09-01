@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voltdesk"
+version = "0.1.0"
+description = "LLM service layer for commercial solar and battery operations, alongside EspoCRM."
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.7,<3",
+    "pydantic-settings>=2.2,<3",
+    "fastapi>=0.111,<1",
+    # Required by FastAPI for the multipart upload on POST /documents.
+    "python-multipart>=0.0.9,<1",
+    "uvicorn[standard]>=0.30,<1",
+    "httpx>=0.27,<1",
+    "sqlalchemy>=2.0,<3",
+    "psycopg[binary]>=3.1,<4",
+    "pgvector>=0.2.5,<1",
+    "redis>=5.0,<6",
+    "rq>=1.16,<2",
+    "anthropic>=0.34",
+    "openai>=1.30,<2",
+    "structlog>=24.1,<25",
+    "python-dotenv>=1.0,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9",
+    "pytest-asyncio>=0.23,<1",
+    "respx>=0.21,<1",
+    "ruff>=0.5,<1",
+    "mypy>=1.10,<2",
+]
+
+[tool.setuptools.packages.find]
+include = ["voltdesk*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "phase2: component is owned by Phase 2 and is expected to be unimplemented in Phase 1",
+    "phase3: component is owned by Phase 3 and is expected to be unimplemented in Phase 1",
+    "phase4: component is owned by Phase 4 and is expected to be unimplemented in Phase 1",
+]
+filterwarnings = ["error::DeprecationWarning:voltdesk.*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true

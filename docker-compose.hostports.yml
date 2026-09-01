@@ -1,0 +1,33 @@
+# Opt-in host access to the stack's PostgreSQL and Redis.
+#
+# The main docker-compose.yml deliberately publishes neither: api and worker reach
+# them over the compose network, and a published port only creates a chance to
+# collide with something else on the machine.
+#
+# You need this overlay only to reach them FROM the host - a local `psql`, a test run
+# against the stack, a GUI client. Usage:
+#
+#     docker compose -f docker-compose.yml -f docker-compose.hostports.yml up -d
+#
+# By default the host ports are left unset, so Docker assigns free ephemeral ones and
+# nothing can collide. Discover them with:
+#
+#     docker compose port postgres 5432
+#     docker compose port redis 6379
+#
+# To pin them instead - only if you know the port is free - set these in .env:
+#
+#     VOLTDESK_POSTGRES_HOST_PORT=55440
+#     VOLTDESK_REDIS_HOST_PORT=56390
+#
+# and point VOLTDESK_DATABASE_URL / VOLTDESK_REDIS_URL at the same numbers.
+#
+# For a one-off query you do not need this file at all:
+#
+#     docker compose exec postgres psql -U voltdesk -d voltdesk
+services:
+  postgres:
+    ports: ["${VOLTDESK_POSTGRES_HOST_PORT:-}:5432"]
+
+  redis:
+    ports: ["${VOLTDESK_REDIS_HOST_PORT:-}:6379"]

@@ -1,0 +1,65 @@
+{
+  "$defs": {
+    "TaskType": {
+      "description": "Unit of work the router routes and the evaluator measures, one per row.",
+      "enum": [
+        "bill_extraction",
+        "site_assessment_extraction",
+        "email_extraction",
+        "knowledge_qa",
+        "schema_repair"
+      ],
+      "title": "TaskType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One evaluation case with human-established ground truth.",
+  "properties": {
+    "expected": {
+      "additionalProperties": true,
+      "description": "Ground truth. For extraction tasks: field_path -> expected value. For QA: keys 'answer_contains', 'required_citation_chunk_ids', 'should_abstain'.",
+      "title": "Expected",
+      "type": "object"
+    },
+    "ground_truth_source": {
+      "description": "How truth was established: 'human_labelled', 'reviewer_correction', or 'generator_seed' for synthetic records where the generator knows the answer.",
+      "title": "Ground Truth Source",
+      "type": "string"
+    },
+    "input_path": {
+      "description": "Path relative to the repo root of the input artefact.",
+      "title": "Input Path",
+      "type": "string"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    },
+    "record_id": {
+      "description": "Stable, e.g. 'bill-0042'. Used as the filename stem.",
+      "title": "Record Id",
+      "type": "string"
+    },
+    "task_type": {
+      "$ref": "#/$defs/TaskType"
+    }
+  },
+  "required": [
+    "record_id",
+    "task_type",
+    "input_path",
+    "expected",
+    "ground_truth_source"
+  ],
+  "title": "GoldenRecord",
+  "type": "object"
+}

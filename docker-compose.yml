@@ -1,0 +1,95 @@
+# VoltDesk local stack. `docker compose up -d --build` brings up everything.
+# Owned by Phase 1. Later phases may add services only if a phase brief says so.
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: voltdesk
+      POSTGRES_PASSWORD: voltdesk
+      POSTGRES_DB: voltdesk
+    # No host port by design. api and worker reach this at postgres:5432 over the
+    # compose network, so publishing it on the host buys nothing except a chance to
+    # collide with whatever else the developer is running. Any fixed number here is
+    # a guess about someone else's machine, and a guess that is wrong breaks their
+    # `up`. See docker-compose.hostports.yml when you do want host access.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U voltdesk -d voltdesk"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    # No host port, same reasoning as postgres.
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # EspoCRM is a separate system. VoltDesk talks to it over REST only, never to its database.
+  # TODO(verify): confirm the current espocrm/espocrm image tag and its required env vars
+  # against https://docs.espocrm.com/administration/docker/installation/ before relying on this
+  # in anything but local development.
+  espocrm-db:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: espocrm
+      MARIADB_DATABASE: espocrm
+      MARIADB_USER: espocrm
+      MARIADB_PASSWORD: espocrm
+    volumes:
+      - espodata:/var/lib/mysql
+
+  espocrm:
+    image: espocrm/espocrm:latest
+    environment:
+      ESPOCRM_DATABASE_HOST: espocrm-db
+      ESPOCRM_DATABASE_NAME: espocrm
+      ESPOCRM_DATABASE_USER: espocrm
+      ESPOCRM_DATABASE_PASSWORD: espocrm
+      ESPOCRM_ADMIN_USERNAME: admin
+      ESPOCRM_ADMIN_PASSWORD: admin_password_change_me
+      ESPOCRM_SITE_URL: http://localhost:8080
+    ports: ["${VOLTDESK_ESPOCRM_HOST_PORT:-8080}:80"]
+    depends_on: [espocrm-db]
+
+  api:
+    build: .
+    command: uvicorn voltdesk.api.app:app --host 0.0.0.0 --port 8000
+    environment:
+      VOLTDESK_DATABASE_URL: postgresql+psycopg://voltdesk:voltdesk@postgres:5432/voltdesk
+      VOLTDESK_REDIS_URL: redis://redis:6379/0
+      VOLTDESK_ESPOCRM_BASE_URL: http://espocrm
+    # Optional: a missing .env falls back to the ${VAR:-default} values above
+    # rather than refusing to start the stack.
+    env_file:
+      - path: .env
+        required: false
+    ports: ["${VOLTDESK_API_HOST_PORT:-8000}:8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+
+  worker:
+    build: .
+    command: rq worker --url redis://redis:6379/0 voltdesk
+    environment:
+      VOLTDESK_DATABASE_URL: postgresql+psycopg://voltdesk:voltdesk@postgres:5432/voltdesk
+      VOLTDESK_REDIS_URL: redis://redis:6379/0
+      VOLTDESK_ESPOCRM_BASE_URL: http://espocrm
+    # Optional: a missing .env falls back to the ${VAR:-default} values above
+    # rather than refusing to start the stack.
+    env_file:
+      - path: .env
+        required: false
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+
+volumes:
+  pgdata:
+  espodata:

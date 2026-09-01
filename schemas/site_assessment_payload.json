@@ -1,0 +1,164 @@
+{
+  "additionalProperties": false,
+  "description": "EspoCRM custom entity `SiteAssessment`.",
+  "properties": {
+    "accessConstraints": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Accessconstraints"
+    },
+    "assessedOn": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Assessedon"
+    },
+    "batterySpaceAvailable": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Batteryspaceavailable"
+    },
+    "existingPvKw": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Existingpvkw"
+    },
+    "external_key": {
+      "description": "Value written to the CRM's voltdeskExternalKey field. Unique per entity.",
+      "minLength": 1,
+      "title": "External Key",
+      "type": "string"
+    },
+    "extraction_confidence": {
+      "description": "Minimum confidence across the fields that populated this.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Extraction Confidence",
+      "type": "number"
+    },
+    "hazards": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Newline-joined hazard list.",
+      "title": "Hazards"
+    },
+    "mainSwitchRatingA": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Mainswitchratinga"
+    },
+    "name": {
+      "description": "Display name, e.g. '12 Example St - 2026-03-04'.",
+      "title": "Name",
+      "type": "string"
+    },
+    "nmi": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Nmi"
+    },
+    "phaseConfiguration": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Phaseconfiguration"
+    },
+    "roofMaterial": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Roofmaterial"
+    },
+    "siteAddress": {
+      "title": "Siteaddress",
+      "type": "string"
+    },
+    "source_document_id": {
+      "description": "app.documents.id of the document behind this.",
+      "title": "Source Document Id",
+      "type": "string"
+    },
+    "usableRoofAreaM2": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Usableroofaream2"
+    }
+  },
+  "required": [
+    "external_key",
+    "source_document_id",
+    "extraction_confidence",
+    "name",
+    "siteAddress"
+  ],
+  "title": "SiteAssessmentPayload",
+  "type": "object"
+}

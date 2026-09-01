@@ -1,0 +1,89 @@
+{
+  "additionalProperties": false,
+  "description": "EspoCRM custom entity `Proposal`.\n\nVoltDesk populates the technical fields only. Generating customer-facing\nproposal documents is permanently out of scope (docs/SCOPE.md).",
+  "properties": {
+    "estimatedAnnualSavingsAud": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Estimatedannualsavingsaud"
+    },
+    "external_key": {
+      "description": "Value written to the CRM's voltdeskExternalKey field. Unique per entity.",
+      "minLength": 1,
+      "title": "External Key",
+      "type": "string"
+    },
+    "extraction_confidence": {
+      "description": "Minimum confidence across the fields that populated this.",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Extraction Confidence",
+      "type": "number"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "proposedBatteryKwh": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Proposedbatterykwh"
+    },
+    "proposedPvKw": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Proposedpvkw"
+    },
+    "siteAddress": {
+      "title": "Siteaddress",
+      "type": "string"
+    },
+    "source_document_id": {
+      "description": "app.documents.id of the document behind this.",
+      "title": "Source Document Id",
+      "type": "string"
+    },
+    "status": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Status"
+    }
+  },
+  "required": [
+    "external_key",
+    "source_document_id",
+    "extraction_confidence",
+    "name",
+    "siteAddress"
+  ],
+  "title": "ProposalPayload",
+  "type": "object"
+}

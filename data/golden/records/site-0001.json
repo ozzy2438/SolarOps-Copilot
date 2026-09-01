@@ -1,0 +1,24 @@
+{
+  "record_id": "site-0001",
+  "task_type": "site_assessment_extraction",
+  "input_path": "data/generated/site_notes/site-0001.jpg",
+  "ground_truth_source": "generator_seed",
+  "notes": "Handwritten notes, photographed at an angle. Defects: handwritten_notes, skewed_scan. Two roof planes. The assessor did not record the main switch rating - a model that produces one is hallucinating, not inferring.",
+  "expected": {
+    "site_address": "22 Perrin Court, Truganina VIC 3029",
+    "nmi": null,
+    "assessed_on": "2026-02-17",
+    "roof_material": "Klip-Lok steel",
+    "roof_planes.0.orientation": "N",
+    "roof_planes.0.tilt_degrees": 5.0,
+    "roof_planes.0.usable_area_m2": 480.0,
+    "roof_planes.1.orientation": "W",
+    "roof_planes.1.tilt_degrees": 5.0,
+    "roof_planes.1.usable_area_m2": 260.0,
+    "phase_configuration": "three_phase",
+    "main_switch_rating_a": null,
+    "existing_pv_kw": 30.0,
+    "battery_space_available": true,
+    "access_constraints": "Roof access via internal ladder only; no crane access on the western side."
+  }
+}
