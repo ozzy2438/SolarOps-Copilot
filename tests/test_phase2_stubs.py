@@ -53,8 +53,7 @@ def test_confidence_scoring_is_not_implemented() -> None:
 
 
 def test_review_queue_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        ReviewQueue().list_pending()
+    assert ReviewQueue(memory={}).list_pending() == []
 
 
 def test_synthetic_generator_is_not_implemented(tmp_path: Path) -> None:
