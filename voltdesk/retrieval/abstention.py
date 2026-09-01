@@ -15,7 +15,7 @@ from voltdesk.contracts.retrieval import (
 from voltdesk.routing.router import Router
 
 _WORD = re.compile(r"[a-z0-9]+(?:[./-][a-z0-9]+)*", re.IGNORECASE)
-_IDENTIFIER = re.compile(r"\b(?:[A-Za-z0-9]+[-/.])+[A-Za-z0-9]+\b")
+_IDENTIFIER = re.compile(r"\b(?:[A-Za-z0-9]+[-/.])+[A-Za-z0-9]+\b|\b\d{4,}\b")
 _QUANTITY = re.compile(r"\b(\d+(?:\.\d+)?)\s*(kwh|kw|w|a|v|%|days?)\b", re.IGNORECASE)
 _STOPWORDS = {
     "a",
@@ -90,8 +90,11 @@ def support_score(query: RetrievalQuery, chunks: list[RetrievedChunk]) -> float:
 
     identifiers = _IDENTIFIER.findall(query.question)
     evidence_text = "\n".join(item.chunk.text for item in chunks[:5]).casefold()
-    if identifiers and all(identifier.casefold() in evidence_text for identifier in identifiers):
-        score += 0.05
+    if identifiers:
+        if all(identifier.casefold() in evidence_text for identifier in identifiers):
+            score += 0.05
+        else:
+            score *= 0.5
     return min(1.0, max(0.0, score))
 
 

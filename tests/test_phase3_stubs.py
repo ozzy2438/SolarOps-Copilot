@@ -80,6 +80,7 @@ def test_default_embedding_model_is_pinned_and_384_dimensional() -> None:
     assert isinstance(embedder, MiniLMEmbedder)
     assert embedder.dimension == 384
     assert embedder.model_id.endswith("@5f1b8cd78bc4fb444dd171e59b18f3a3af89a079")
+    assert default_embedder() is embedder
 
 
 def test_corpus_ingestion_is_licence_gated_and_idempotent(

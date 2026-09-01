@@ -13,7 +13,7 @@ from voltdesk.db.session import get_engine
 from voltdesk.ingestion.embeddings import Embedder, default_embedder
 
 _RRF_K = 60
-_IDENTIFIER = re.compile(r"\b(?:[A-Za-z0-9]+[-/.])+[A-Za-z0-9]+\b")
+_IDENTIFIER = re.compile(r"\b(?:[A-Za-z0-9]+[-/.])+[A-Za-z0-9]+\b|\b\d{4,}\b")
 
 
 class RetrievalBackend(Protocol):

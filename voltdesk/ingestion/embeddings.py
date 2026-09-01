@@ -13,6 +13,7 @@ ADR-0015 pins the local Apache-2.0 embedding model and its immutable revision.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import text
@@ -189,6 +190,7 @@ def store_chunks(
     )
 
 
+@lru_cache(maxsize=1)
 def default_embedder() -> Embedder:
     """Construct the immutable, ADR-selected local embedding model."""
     return MiniLMEmbedder()

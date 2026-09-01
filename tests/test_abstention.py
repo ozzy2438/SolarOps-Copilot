@@ -85,3 +85,10 @@ def test_conflicting_quantities_are_named_honestly() -> None:
         abstention_reason(query, chunks, support_score(query, chunks))
         == AbstentionReason.CONFLICTING_EVIDENCE
     )
+
+
+def test_unknown_explicit_identifier_stays_below_threshold() -> None:
+    query = RetrievalQuery(query_id="q1", question="Which DNSP applies to postcode 3000?")
+    chunks = [_retrieved("Installations must comply with the applicable DNSP agreement.")]
+
+    assert support_score(query, chunks) < 0.55
