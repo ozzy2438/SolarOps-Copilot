@@ -289,3 +289,93 @@ Compose `docker compose up -d --build` did start images. **Container-to-containe
 - Nested Docker in this cloud environment can start containers and still drop overlay TCP. Host ports and `docker compose exec` still work.
 
 **What I would tell the next model:** do not touch `voltdesk/llm/`, `voltdesk/audit/`, or `voltdesk/crm/client.py`. Set `customPrefixDisabled` before creating entities or mapping.py will 404. Number schema changes from 0006. A job that raises before `ExtractionFailed` must mark the document failed and enqueue review — never leave `status=extracting`. Do not invent NMI checksums or licences. Do not ingest a corpus document whose licence is still `TODO(verify)`.
+
+---
+
+## Phase 3 — report
+
+**Status:** implementation complete; 11/12 acceptance criteria observed. The one live
+cited-answer smoke is blocked by the environment having no configured Anthropic or
+OpenAI credential. It was run and returned HTTP 500 at the provider boundary, so it is
+not reported as a passing cited answer. The citation path is covered with an audited
+LLM seam in the offline suite; an out-of-corpus request passed against the live API as
+HTTP 200 without a model call.
+
+**Implemented:**
+
+- Licence-gated, SHA-256-idempotent Tier A ingestion with source URL, licence,
+  retrieval timestamp and atomic document/chunk/vector storage.
+- Structural chunking by Markdown heading and numbered clause; tables remain intact
+  and every chunk has a section path.
+- Local, lazy, process-cached MiniLM embeddings; PostgreSQL refuses model/dimension
+  mixing and `0006_embedding_dimension.sql` changes only an empty placeholder to
+  `vector(384)`.
+- PostgreSQL GIN lexical search plus compatible pgvector cosine search, normalized
+  reciprocal-rank fusion, source filtering and explicit-identifier gating.
+- JSON-schema synthesis through `LLMClient`, followed by exact quote, chunk,
+  provenance and supported-claim verification. A paraphrased or invented citation
+  becomes an abstention.
+- Cheap support scoring before synthesis; below-threshold questions create no model
+  call or audit row. `/qa/ask` returns abstentions as HTTP 200, and
+  `/qa/corpus/stats` reports live document/chunk counts.
+- `tests/test_phase3_stubs.py` retained; every Phase 3 stub assertion was replaced.
+
+**Embedding model chosen:** `all-MiniLM-L6-v2`, 384 dimensions, ADR-0015; its
+Apache-2.0, CPU-only ONNX runtime artifact is pinned as
+`Qdrant/all-MiniLM-L6-v2-onnx@5f1b8cd78bc4fb444dd171e59b18f3a3af89a079`
+by ADR-0016. It keeps corpus text local and avoids provider credentials and GPU/CUDA
+packages.
+
+**Corpus ingested:** 3 documents, 12 chunks. `regulator_methodology`: 1 document / 4
+chunks. `rebate_program_doc`: 2 documents / 8 chunks. First live ingest wrote 12;
+the second and a host-side third run wrote 0. `licence IS NULL`: 0. Distinct embedding
+model identities: exactly 1.
+
+**Sources verified:** Clean Energy Regulator STC creation guidance, federal Cheaper
+Home Batteries Program, and Solar Victoria Notice to Market section 3 were eligible
+under applicable CC BY 4.0 terms and ingested as attributed adapted snapshots. Current
+CEC module/inverter URLs, Fronius Symo Advanced, Energex STNW1170/AusNet terms and the
+AEMO NMI allocation references were also checked, but not ingested without a suitable
+reuse grant.
+
+**Sources still unverified:** a separate CEC approved-products data licence; a
+manufacturer redistribution/embedding grant; written DNSP reuse permission; the VDO
+tariff-table redistribution licence; and a licensed public interval dataset. AEMO's
+current NMI procedure/allocation list was verified as the authoritative NMI-block
+reference, but its terms did not grant corpus ingestion. No postcode-to-DNSP inference
+was added.
+
+**Abstention rate on a smoke set:** 3/6. Three licensed-corpus questions scored as
+answerable and retrieved the correct STC, federal battery-program and AS/NZS 4777.2
+sections. Football, bread and an unavailable postcode `3000` DNSP mapping abstained.
+That felt right: the set was intentionally balanced 3 answerable / 3 unanswerable, and
+the explicit unknown identifier was prevented from riding a generic DNSP text match.
+
+**Acceptance checklist:**
+
+| Criterion | Result |
+|---|---|
+| `make verify` | pass: ruff, strict mypy, 128 tests, 15 schemas |
+| licence dry-run | pass: 3/3 listed; missing licences exit 2 by test |
+| ingest twice | pass: 12 then 0 chunks; literal host run also 0 |
+| no NULL corpus licences | pass: 0 |
+| one embedding model id | pass: exactly the pinned ONNX revision |
+| chunking target | pass: 3 tests |
+| lexical clause retrieval | pass: exact clause beats semantic-only result |
+| verbatim citation target | pass: paraphrase rejected |
+| cheap abstention target | pass: model calls 0, audit records 0 |
+| live in-corpus `/qa/ask` | **blocked:** no provider credential; observed HTTP 500, not claimed pass |
+| live out-of-corpus `/qa/ask` | pass: HTTP 200, `abstained=true`, `out_of_scope` |
+| Phase 3 `NotImplementedError` grep | pass: empty |
+
+**Contract changes:** none.
+
+**ADRs added:** 0015 (MiniLM model/dimension) and 0016 (pinned CPU ONNX artifact;
+supersedes only ADR-0015's runtime/storage identity).
+
+**What I would tell the next model:** do not ingest the excluded commercial sources
+until their rights holders grant suitable reuse. Preserve the model revision in every
+vector query and re-embed the whole corpus if it changes. Before claiming full live
+acceptance, connect an Anthropic credential through the normal secure environment
+flow and rerun only the in-corpus `/qa/ask` smoke; do not paste a key into chat or add
+an extractive fallback that bypasses `LLMClient`.

@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -123,6 +126,35 @@ def test_corpus_ingestion_is_licence_gated_and_idempotent(
     }
     assert ingest_path(str(path), CorpusSource.REGULATOR_METHODOLOGY, "Title", **kwargs) == 1
     assert ingest_path(str(path), CorpusSource.REGULATOR_METHODOLOGY, "Title", **kwargs) == 0
+
+
+def test_corpus_dry_run_exits_nonzero_for_missing_licence(
+    tmp_path: Path,
+) -> None:
+    manifest = {
+        "documents": [
+            {
+                "path": "unlicensed.md",
+                "document_id": "unlicensed",
+                "title": "Unlicensed",
+                "source": "regulator_methodology",
+                "source_url": "https://example.test/unlicensed",
+                "licence": None,
+                "retrieved_at": "2026-09-01T00:00:00+10:00",
+            }
+        ]
+    }
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    script = Path(__file__).resolve().parents[1] / "scripts" / "ingest_corpus.py"
+    completed = subprocess.run(
+        [sys.executable, str(script), str(tmp_path), "--dry-run"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 2
+    assert "MISSING" in completed.stdout
 
 
 def test_retrieval_fuses_lexical_and_vector_candidates() -> None:

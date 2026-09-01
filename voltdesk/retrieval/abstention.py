@@ -45,6 +45,7 @@ _DOMAIN_TERMS = {
     "cec",
     "certificate",
     "connection",
+    "dnsp",
     "electricity",
     "energy",
     "export",

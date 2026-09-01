@@ -91,4 +91,6 @@ def test_unknown_explicit_identifier_stays_below_threshold() -> None:
     query = RetrievalQuery(query_id="q1", question="Which DNSP applies to postcode 3000?")
     chunks = [_retrieved("Installations must comply with the applicable DNSP agreement.")]
 
-    assert support_score(query, chunks) < 0.55
+    score = support_score(query, chunks)
+    assert score < 0.55
+    assert abstention_reason(query, chunks, score) == AbstentionReason.INSUFFICIENT_SPECIFICITY
