@@ -31,15 +31,16 @@ def test_parsers_are_not_implemented() -> None:
 
 
 def test_extractor_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        Extractor().extract(None)  # type: ignore[arg-type]
+    assert callable(Extractor().extract)
 
 
 def test_prompts_are_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        prompts.system_prompt_for(DocumentType.ELECTRICITY_BILL)
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        prompts.user_prompt_for(DocumentType.ELECTRICITY_BILL, "text")
+    system = prompts.system_prompt_for(DocumentType.ELECTRICITY_BILL)
+    assert "JSON Schema" in system
+    assert "value: null" in system
+    user = prompts.user_prompt_for(DocumentType.ELECTRICITY_BILL, "text")
+    assert "text" in user
+    assert "document begins" in user
 
 
 def test_confidence_scoring_is_not_implemented() -> None:
