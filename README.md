@@ -52,6 +52,19 @@ curl -s localhost:8000/health/live     # {"status":"ok"}
 `make down` stops the stack and keeps its data. Deleting VoltDesk's volumes is a
 separate, confirmed command (`make destroy`).
 
+### Rebuilding the golden set
+
+The 110 synthetic extraction inputs used by the golden records are reproducible
+Tier B artefacts and are intentionally ignored under `data/generated/`. Materialise
+them before rebuilding the tracked golden JSON records:
+
+```bash
+make golden-set
+```
+
+This runs `scripts/materialise_generated.py` before `scripts/build_golden_set.py`.
+The `test` and `verify` targets materialise the inputs automatically as well.
+
 ### Ports
 
 The stack publishes exactly two ports on your machine:

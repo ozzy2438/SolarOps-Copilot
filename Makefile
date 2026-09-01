@@ -1,4 +1,4 @@
-.PHONY: help up down destroy logs install test lint typecheck schemas verify
+.PHONY: help up down destroy logs install materialise-generated golden-set test lint typecheck schemas verify
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -21,7 +21,13 @@ logs:  ## Follow API logs
 install:  ## Install the package and dev dependencies into the current environment
 	pip install -e ".[dev]"
 
-test:  ## Run the test suite
+materialise-generated:  ## Materialise deterministic synthetic inputs used by the golden set
+	python scripts/materialise_generated.py
+
+golden-set: materialise-generated  ## Rebuild the golden records after materialising inputs
+	python scripts/build_golden_set.py
+
+test: materialise-generated  ## Run the test suite
 	pytest -q
 
 lint:  ## Lint
