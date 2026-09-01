@@ -124,7 +124,7 @@ Each is a command and its expected output.
       writes nothing
 - [ ] `curl -s -X POST localhost:8000/documents -F document_type=electricity_bill -F file=@... -o /dev/null -w '%{http_code}'` → `202`
 - [ ] `curl -s localhost:8000/review | jq '.items | length'` → a number, not a 501
-- [ ] `psql "$VOLTDESK_DATABASE_URL" -c "SELECT count(*) FROM app.model_calls"` →
+- [ ] `docker compose exec -T postgres psql -U voltdesk -d voltdesk -c "SELECT count(*) FROM app.model_calls"` →
       one row per model call made, including failures
 - [ ] `grep -rn --include="*.py" -A1 "raise NotImplementedError" voltdesk/ | grep "Phase 2"` → no output
 

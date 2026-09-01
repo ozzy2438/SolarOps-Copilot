@@ -41,7 +41,7 @@ prompts, extractor, confidence scoring, review queue, synthetic generator (Phase
 chunking, embeddings, corpus ingestion, retrieval, synthesis, abstention (Phase 3);
 evaluation runner and metrics (Phase 4).
 
-**Verification:** `make verify` clean — 79 tests passed, ruff clean, mypy clean across
+**Verification:** `make verify` clean — 80 tests passed, ruff clean, mypy clean across
 65 source files, no schema drift. Every stub raises `NotImplementedError` naming its
 phase (17 Phase 2, 9 Phase 3, 9 Phase 4); all three committed golden records validate
 against `GoldenRecord`.
@@ -96,6 +96,38 @@ returned `calls: 0` alongside `redacted_calls: null` — `SUM` over zero rows is
 SQL while `COUNT` is 0, so anything computing a redaction coverage ratio divides by
 null. Every `SUM` in the metrics queries is now `COALESCE`'d, pinned by a test. Like
 the Decimal bug, invisible to the mocked suite.
+
+**Third round: 55432 was taken too.** The reviewer's machine had an unrelated Docker
+project on it (`stockoutops-pr20-scope-db`). Picking a "less common" port is a guess
+about someone else's machine, and guesses keep losing, so the approach was wrong
+rather than the number:
+
+- **PostgreSQL and Redis are no longer published on the host at all.** `api` and
+  `worker` reach them over the Compose network at `postgres:5432` / `redis:6379`, so a
+  host port bought nothing except a collision surface. Only `api` (8000) and `espocrm`
+  (8080) are published, because those are the two you actually address, and both stay
+  overridable.
+- Host access to the database is opt-in via `docker-compose.hostports.yml`, whose
+  ports are **unset by default** so Docker assigns free ephemeral ones. Nothing can
+  collide even in the opt-in path. `docker compose port postgres 5432` reveals them.
+- Every `psql "$VOLTDESK_DATABASE_URL"` in the phase briefs and `migrations/README.md`
+  became `docker compose exec -T postgres psql -U voltdesk -d voltdesk`, which needs no
+  host port. The migration loop also gained `ON_ERROR_STOP=1` — without it psql reports
+  success after a failed statement.
+
+**A latent data-safety bug found while writing that up.** `.env.example` now says
+`VOLTDESK_DATABASE_URL` is commented out because a `localhost:5432` default would
+connect to whatever PostgreSQL the developer already runs — but `voltdesk/config.py`'s
+own default *was* `localhost:5432`, so commenting it out moved the landmine rather than
+removing it. Applying VoltDesk's migrations in that state would have created its schemas
+inside an unrelated database, silently, because the connection would have succeeded.
+
+Both defaults are now deliberately unresolvable placeholders
+(`voltdesk-db-not-configured`, `voltdesk-redis-not-configured`). Verified with a live
+PostgreSQL on 5432: an unconfigured VoltDesk reports
+`failed to resolve host 'voltdesk-db-not-configured'` instead of connecting to it.
+Failing to resolve a hostname is loud and harmless; writing into the wrong database is
+neither. Pinned by `tests/test_config.py`.
 
 **Still not verified:** `docker compose up` end to end. This environment's network
 policy blocks Docker Hub's blob CDN (`production.cloudfront.docker.com` returns 403 to

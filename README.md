@@ -52,50 +52,54 @@ curl -s localhost:8000/health/live     # {"status":"ok"}
 `make down` stops the stack and keeps its data. Deleting VoltDesk's volumes is a
 separate, confirmed command (`make destroy`).
 
-### If a port is already in use
+### Ports
 
-The Compose stack publishes PostgreSQL on host port **55432** and Redis on **56379**,
-not their standard 5432 and 6379. That is deliberate: a developer machine often
-already runs one of those, and VoltDesk should never compete with it for a port.
+The stack publishes exactly two ports on your machine:
 
-If you still get `Bind for 0.0.0.0:<port> failed: port is already allocated`, change
-the number in `.env` — never stop the service that already holds the port:
+| Service | Host port | Why it is published |
+|---|---|---|
+| `api` | 8000 | You call it |
+| `espocrm` | 8080 | You browse it |
 
-```bash
-VOLTDESK_POSTGRES_HOST_PORT=55433    # or any free port
-VOLTDESK_REDIS_HOST_PORT=56380
-VOLTDESK_API_HOST_PORT=8001
-VOLTDESK_ESPOCRM_HOST_PORT=8081
-```
+**PostgreSQL and Redis are not published at all.** `api` and `worker` reach them over
+the Compose network at `postgres:5432` and `redis:6379`, so a host port would buy
+nothing except a chance to collide with something else you run. Any fixed number here
+would be a guess about your machine, and a wrong guess breaks `docker compose up`.
 
-These are host ports only. Inside the stack, `api` and `worker` always reach the
-database at `postgres:5432`, whatever you set here. If you change the Postgres or
-Redis host port, update `VOLTDESK_DATABASE_URL` / `VOLTDESK_REDIS_URL` in `.env` to
-match — those are what a host-side `psql` or test run connects to.
-
-To see what holds a port before changing anything:
+If 8000 or 8080 are taken, move VoltDesk rather than the thing that already holds the
+port — set `VOLTDESK_API_HOST_PORT` / `VOLTDESK_ESPOCRM_HOST_PORT` in `.env`. To see
+what holds a port first (read-only, changes nothing):
 
 ```bash
-lsof -nP -iTCP:5432 -sTCP:LISTEN      # macOS/Linux, read-only
-docker ps --format '{{.Names}}\t{{.Ports}}' | grep 5432
+lsof -nP -iTCP:8000 -sTCP:LISTEN
+docker ps --format '{{.Names}}\t{{.Ports}}' | grep 8000
 ```
 
-> The Compose file validates and the migrations, audit path and API were verified
-> against a real PostgreSQL + pgvector and Redis. `docker compose up` itself has not
-> been run end to end — the Phase 1 environment could not reach Docker Hub. The
-> EspoCRM service block in particular is unconfirmed. See `PROGRESS.md`.
+#### Reaching the database from the host
 
-To work on the code:
+Most of the time you do not need to:
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-make install                  # pip install -e ".[dev]"
-make verify                   # ruff + mypy + pytest + schema drift check
+docker compose exec postgres psql -U voltdesk -d voltdesk
+docker compose exec redis redis-cli
 ```
 
-Expected on a clean checkout: **79 passed**, ruff clean, mypy clean across 65 files.
-The whole suite runs with no network, no database and no API keys — a test that needs
-one of those is a test that gets skipped in CI, and therefore not a test.
+When you do want a host port — a GUI client, a local test run against the stack —
+there is an opt-in overlay:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.hostports.yml up -d
+docker compose port postgres 5432        # the free port Docker picked
+```
+
+It leaves the host ports unset by default, so Docker assigns free ephemeral ones and
+nothing can collide. Pin them with `VOLTDESK_POSTGRES_HOST_PORT` only after checking
+the port is free, and point `VOLTDESK_DATABASE_URL` at the same number.
+
+`VOLTDESK_DATABASE_URL` is commented out in `.env.example` deliberately: a default
+pointing at `localhost:5432` would connect to whatever PostgreSQL you already run, and
+applying VoltDesk's migrations there would create its schemas inside somebody else's
+database.
 
 ## Architecture in one paragraph
 

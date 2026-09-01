@@ -107,8 +107,8 @@ error: the system did its job.
       licence; **exits non-zero if any licence is missing**
 - [ ] `python scripts/ingest_corpus.py` → prints chunks written; running it twice
       writes zero the second time (idempotent)
-- [ ] `psql "$VOLTDESK_DATABASE_URL" -c "SELECT count(*) FROM vec.corpus_documents WHERE licence IS NULL"` → `0`
-- [ ] `psql "$VOLTDESK_DATABASE_URL" -c "SELECT DISTINCT embedding_model_id FROM vec.embeddings"` → exactly one value
+- [ ] `docker compose exec -T postgres psql -U voltdesk -d voltdesk -c "SELECT count(*) FROM vec.corpus_documents WHERE licence IS NULL"` → `0`
+- [ ] `docker compose exec -T postgres psql -U voltdesk -d voltdesk -c "SELECT DISTINCT embedding_model_id FROM vec.embeddings"` → exactly one value
 - [ ] `pytest tests/test_chunking.py -q` → passes; a numbered clause is never split
       and `section_path` is populated
 - [ ] `pytest tests/test_retrieval.py -k lexical -q` → passes; an exact clause-number

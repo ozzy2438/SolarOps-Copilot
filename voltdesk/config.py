@@ -28,10 +28,22 @@ class Settings(BaseSettings):
     env: str = Field(default="local", description="local | staging | production.")
     log_level: str = Field(default="INFO")
 
+    # These defaults deliberately do not resolve. A default of localhost:5432 would
+    # connect to whatever PostgreSQL the developer already runs, and applying
+    # VoltDesk's migrations there would create its schemas inside somebody else's
+    # database - silently, because the connection would succeed. Failing to resolve a
+    # hostname is a loud, harmless error; writing into the wrong database is neither.
+    #
+    # Compose supplies the real values to the api and worker services. For host-side
+    # use, see docker-compose.hostports.yml.
     database_url: str = Field(
-        default="postgresql+psycopg://voltdesk:voltdesk@localhost:5432/voltdesk"
+        default="postgresql+psycopg://voltdesk:voltdesk@voltdesk-db-not-configured:5432/voltdesk",
+        description="Set explicitly. The default is an unresolvable placeholder.",
     )
-    redis_url: str = Field(default="redis://localhost:6379/0")
+    redis_url: str = Field(
+        default="redis://voltdesk-redis-not-configured:6379/0",
+        description="Set explicitly. The default is an unresolvable placeholder.",
+    )
 
     anthropic_api_key: SecretStr = Field(default=SecretStr(""))
     openai_api_key: SecretStr = Field(default=SecretStr(""))

@@ -18,11 +18,22 @@ does not have.
 ## Applying them
 
 Locally, `docker compose up` applies them on first start of an empty volume. Against
-an existing database:
+a running stack, without needing a published host port:
 
 ```bash
-for f in migrations/*.sql; do psql "$VOLTDESK_DATABASE_URL" -f "$f"; done
+for f in migrations/*.sql; do
+  docker compose exec -T postgres psql -U voltdesk -d voltdesk -v ON_ERROR_STOP=1 -f - < "$f"
+done
 ```
+
+Against a database reachable from the host, once you have its real URL (see
+`docker-compose.hostports.yml`):
+
+```bash
+for f in migrations/*.sql; do psql "$VOLTDESK_DATABASE_URL" -v ON_ERROR_STOP=1 -f "$f"; done
+```
+
+`ON_ERROR_STOP=1` matters: without it psql reports success after a failed statement.
 
 To pick up a new migration locally you can either apply it with the loop above, or
 start from an empty volume with `make destroy && make up`. **`make destroy` deletes

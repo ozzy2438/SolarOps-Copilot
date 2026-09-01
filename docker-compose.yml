@@ -7,11 +7,11 @@ services:
       POSTGRES_USER: voltdesk
       POSTGRES_PASSWORD: voltdesk
       POSTGRES_DB: voltdesk
-    # Host port only. Containers reach this at postgres:5432 over the compose
-    # network regardless. The default is deliberately NOT 5432: a developer
-    # machine very often already has PostgreSQL on it, and VoltDesk must not
-    # compete with it for the port. Override with VOLTDESK_POSTGRES_HOST_PORT.
-    ports: ["${VOLTDESK_POSTGRES_HOST_PORT:-55432}:5432"]
+    # No host port by design. api and worker reach this at postgres:5432 over the
+    # compose network, so publishing it on the host buys nothing except a chance to
+    # collide with whatever else the developer is running. Any fixed number here is
+    # a guess about someone else's machine, and a guess that is wrong breaks their
+    # `up`. See docker-compose.hostports.yml when you do want host access.
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./migrations:/docker-entrypoint-initdb.d:ro
@@ -23,8 +23,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    # Same reasoning as postgres: 6379 is commonly already taken locally.
-    ports: ["${VOLTDESK_REDIS_HOST_PORT:-56379}:6379"]
+    # No host port, same reasoning as postgres.
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s

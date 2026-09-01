@@ -28,3 +28,21 @@ def test_secrets_do_not_appear_in_repr(monkeypatch: pytest.MonkeyPatch) -> None:
     settings = get_settings()
     assert "sk-should-not-be-printed" not in repr(settings)
     assert settings.has_anthropic()
+
+
+def test_unconfigured_database_url_does_not_point_at_a_local_postgres() -> None:
+    """A default of localhost:5432 would silently connect to whatever PostgreSQL the
+    developer already runs, and applying VoltDesk's migrations there would create its
+    schemas inside somebody else's database. The default must not resolve.
+
+    This is not hypothetical: it was found on a machine where 5432 and 55432 were both
+    already owned by unrelated Docker projects.
+    """
+    settings = Settings(_env_file=None)
+    assert "localhost" not in settings.database_url
+    assert "127.0.0.1" not in settings.database_url
+    assert "not-configured" in settings.database_url
+
+    assert "localhost" not in settings.redis_url
+    assert "127.0.0.1" not in settings.redis_url
+    assert "not-configured" in settings.redis_url
