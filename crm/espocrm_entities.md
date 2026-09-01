@@ -4,11 +4,32 @@ VoltDesk writes to four custom entities. They must exist in the EspoCRM instance
 before any write path works. VoltDesk never touches the CRM database — everything is
 created through Administration → Entity Manager, or through EspoCRM's own admin API.
 
-> **`TODO(verify)`** — these definitions were written in Phase 1 without a live
-> EspoCRM instance. Phase 2 owns creating them in the instance and correcting this
-> file where the instance disagrees. The field *names* below are what
-> `voltdesk/contracts/crm.py` serialises, so a correction here is a contract change
-> and needs the same care.
+> **Phase 2 live check (EspoCRM 10.0.6, `espocrm/espocrm:latest` on 2026-09-01).**
+> Entities and fields below were created through the Administration HTTP actions the
+> Entity Manager UI posts (`POST /api/v1/EntityManager/action/createEntity` and
+> `POST /api/v1/Admin/fieldManager/{scope}`). Those routes exist in this image; there
+> is no separate undocumented “create entity” protocol. An API user with
+> `authMethod=ApiKey` was created (`POST /api/v1/User`, `type=api`); the instance
+> generated `apiKey` on create, matching https://docs.espocrm.com/development/api/.
+>
+> Default Entity Manager behaviour prefixes custom entity types with `C`
+> (`EnergyProfile` → `CEnergyProfile`). That disagrees with the names in this file
+> and in `voltdesk/crm/mapping.py`. Official docs allow
+> `customPrefixDisabled` ([Entity Manager](https://docs.espocrm.com/administration/entity-manager/));
+> it was set to `true` so the names below exist as written. **At your own risk**, as
+> the docs say, if a future Espo core entity collides.
+>
+> Varchar fields in 10.0.6 have **no Field Manager `unique` parameter**. Uniqueness
+> for `voltdeskExternalKey` was added as an entityDefs index
+> (`columns: [voltdeskExternalKey, deleted]`, `unique: true`) and rebuild produced
+> `UNIQ_VOLTDESK_EXTERNAL_KEY_UNIQUE` in MariaDB. `EspoCrmClient` search
+> `where[N][type]=equals` against `voltdeskExternalKey` worked; upsert created then
+> updated one row. `voltdesk/crm/client.py` was not changed.
+>
+> Compose overlay TCP between containers timed out in the Phase 2 environment, so
+> the installer was completed with MariaDB + Espo on the host network. That is an
+> environment constraint, not a compose-file change. Image tag `latest` is still
+> unpinned (`TODO(verify)` remains for a digest pin).
 
 ## The idempotency field — on every entity
 
