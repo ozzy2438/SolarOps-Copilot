@@ -99,7 +99,7 @@ class AnthropicProvider(LLMProvider):
 
         started = time.perf_counter()
         try:
-            response = client.messages.create(**kwargs)
+            response = _create_with_schema_fallback(client, kwargs)
         except anthropic.APITimeoutError as exc:
             raise ProviderError(
                 f"anthropic timeout: {exc}", retryable=True, outcome=CallOutcome.TIMEOUT
@@ -166,6 +166,30 @@ def _thinking_config(model_id: str) -> dict[str, str] | None:
     if model_id in _ADAPTIVE_THINKING_MODELS:
         return {"type": "adaptive"}
     return None
+
+
+def _create_with_schema_fallback(client: Any, kwargs: dict[str, Any]) -> Any:
+    """Retry without grammar only when Anthropic rejects its compiled size.
+
+    Extraction prompts already carry the complete provider-neutral schema, and the
+    response is validated against that original Pydantic contract (with one repair
+    attempt) after generation. Small schemas keep constrained decoding; this fallback
+    is limited to the provider's explicit grammar-size rejection.
+    """
+    import anthropic
+
+    try:
+        return client.messages.create(**kwargs)
+    except anthropic.APIStatusError as exc:
+        if (
+            exc.status_code != 400
+            or "output_config" not in kwargs
+            or "compiled grammar is too large" not in str(exc).casefold()
+        ):
+            raise
+        fallback = dict(kwargs)
+        fallback.pop("output_config")
+        return client.messages.create(**fallback)
 
 
 def _usage_from(response: Any) -> TokenUsage:

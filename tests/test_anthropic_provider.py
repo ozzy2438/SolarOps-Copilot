@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import Any
 
 import anthropic
@@ -9,7 +10,11 @@ import pytest
 
 from voltdesk.config import Settings
 from voltdesk.llm import anthropic_provider
-from voltdesk.llm.anthropic_provider import _structured_output_schema, _thinking_config
+from voltdesk.llm.anthropic_provider import (
+    _create_with_schema_fallback,
+    _structured_output_schema,
+    _thinking_config,
+)
 
 
 @pytest.mark.parametrize(
@@ -78,3 +83,34 @@ def test_thinking_configuration_matches_model_capability() -> None:
     assert _thinking_config("claude-haiku-4-5") is None
     assert _thinking_config("claude-opus-5") == {"type": "adaptive"}
     assert _thinking_config("claude-sonnet-5") == {"type": "adaptive"}
+
+
+def test_oversized_grammar_retries_once_without_output_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeStatusError(Exception):
+        status_code = 400
+
+    calls: list[dict[str, Any]] = []
+
+    def create(**kwargs: Any) -> str:
+        calls.append(kwargs)
+        if len(calls) == 1:
+            raise FakeStatusError("The compiled grammar is too large")
+        return "ok"
+
+    monkeypatch.setattr(anthropic, "APIStatusError", FakeStatusError)
+    client = SimpleNamespace(messages=SimpleNamespace(create=create))
+
+    result = _create_with_schema_fallback(
+        client,
+        {
+            "model": "claude-haiku-4-5",
+            "messages": [],
+            "output_config": {"format": {"type": "json_schema", "schema": {}}},
+        },
+    )
+
+    assert result == "ok"
+    assert "output_config" in calls[0]
+    assert "output_config" not in calls[1]
