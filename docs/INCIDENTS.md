@@ -43,9 +43,13 @@ OpenAI's all-properties-required schema form.
 
 **Remediation:** The OpenAI adapter now creates a provider-specific strict schema,
 including nested definitions and reference siblings, without changing the committed
-provider-neutral schemas; regression tests pin the conversion. The OpenAI pilot must
-be rerun from the remediation commit. Anthropic remains blocked until the matching
-workspace ID is supplied or the key is replaced with one that does not require it.
+provider-neutral schemas; regression tests pin the conversion. The rerun passed an
+8-record pilot and then completed all 150 records from commit `5ca8b4c`. The full run
+reported USD 0.194148 evaluation cost. A PostgreSQL backend restart after record 75
+was recovered through the existing checkpoint/resume path; the uncheckpointed
+`email-0026` request was repeated, adding USD 0.001230 to the audit ledger but not to
+the benchmark result. Anthropic remains blocked until the matching workspace ID is
+supplied or the key is replaced with one that does not require it.
 
 **Related `call_id`s:** Anthropic representative
 `00b1d97c-eb97-4562-85ac-c04d69d60244`; OpenAI representative
