@@ -21,3 +21,33 @@ before rebuilding records, and `make test`/`make verify` make the same step an
 explicit prerequisite. README instructions document the order.
 
 **Related `call_id`s:** None — the failure occurred before any provider or model call.
+
+## 2026-09-02 — Live benchmark pilot was rejected at both provider boundaries
+
+**What happened:** The requested 8-record-per-model pilot reached both provider APIs,
+but no completion was accepted. Anthropic returned HTTP 400 because the configured
+key requires an `anthropic-workspace-id`. OpenAI returned HTTP 400 because VoltDesk
+sent the ordinary Pydantic schema directly into strict structured-output mode, where
+every property must appear in `required`. Both evaluation runs checkpointed eight
+failed records and remained unfinished because field precision was undefined.
+
+**Blast radius:** Pilot only. Seven calls per provider were attempted; one QA record
+per model abstained before a provider call. All fourteen rejected calls reported zero
+input tokens, zero output tokens and USD 0.00 cost. The full 150-record runs were not
+started, and the pre-existing `claude-opus-5` audit row was not part of this work.
+
+**Root cause:** The Anthropic credential is workspace-scoped but no workspace ID is
+configured. Independently, the OpenAI adapter had never been exercised live with
+strict structured outputs and did not convert optional Pydantic properties into
+OpenAI's all-properties-required schema form.
+
+**Remediation:** The OpenAI adapter now creates a provider-specific strict schema,
+including nested definitions and reference siblings, without changing the committed
+provider-neutral schemas; regression tests pin the conversion. The OpenAI pilot must
+be rerun from the remediation commit. Anthropic remains blocked until the matching
+workspace ID is supplied or the key is replaced with one that does not require it.
+
+**Related `call_id`s:** Anthropic representative
+`00b1d97c-eb97-4562-85ac-c04d69d60244`; OpenAI representative
+`9a9a4db2-a32a-4fb7-acf9-34755744bf0a`. The complete sets remain in
+`app.model_calls` under model IDs `claude-haiku-4-5` and `gpt-4o-mini`.
