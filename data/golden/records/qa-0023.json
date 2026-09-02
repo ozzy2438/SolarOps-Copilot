@@ -1,0 +1,16 @@
+{
+  "record_id": "qa-0023",
+  "task_type": "knowledge_qa",
+  "input_path": "data/golden/questions/qa-0023.txt",
+  "expected": {
+    "should_abstain": false,
+    "answer_contains": [
+      "DNSP connection agreement"
+    ],
+    "required_citation_chunk_ids": [
+      "chunk-968ac4facae9b21e8c7dab1d"
+    ]
+  },
+  "ground_truth_source": "human_labelled",
+  "notes": "Labelled against the 12-chunk licensed Phase 3 corpus."
+}

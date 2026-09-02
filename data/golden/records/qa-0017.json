@@ -1,0 +1,16 @@
+{
+  "record_id": "qa-0017",
+  "task_type": "knowledge_qa",
+  "input_path": "data/golden/questions/qa-0017.txt",
+  "expected": {
+    "should_abstain": false,
+    "answer_contains": [
+      "retailers and installers"
+    ],
+    "required_citation_chunk_ids": [
+      "chunk-5aa4422c79bce22a8e86e368"
+    ]
+  },
+  "ground_truth_source": "human_labelled",
+  "notes": "Labelled against the 12-chunk licensed Phase 3 corpus."
+}

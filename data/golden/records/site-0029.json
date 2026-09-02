@@ -1,0 +1,24 @@
+{
+  "record_id": "site-0029",
+  "task_type": "site_assessment_extraction",
+  "input_path": "data/generated/site_notes/site-0029.txt",
+  "expected": {
+    "site_address": "22 Perrin Court, Truganina VIC 3029",
+    "nmi": "6296516928",
+    "assessed_on": "2026-03-31",
+    "roof_material": "Klip-Lok steel",
+    "roof_planes.0.orientation": "W",
+    "roof_planes.0.tilt_degrees": 5.0,
+    "roof_planes.0.usable_area_m2": 300.0,
+    "roof_planes.1.orientation": "N",
+    "roof_planes.1.tilt_degrees": 5.0,
+    "roof_planes.1.usable_area_m2": 120.0,
+    "phase_configuration": "three_phase",
+    "main_switch_rating_a": 250.0,
+    "existing_pv_kw": null,
+    "battery_space_available": true,
+    "access_constraints": "internal ladder only; no crane on the western side"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

@@ -1,0 +1,18 @@
+{
+  "record_id": "qa-0011",
+  "task_type": "knowledge_qa",
+  "input_path": "data/golden/questions/qa-0011.txt",
+  "expected": {
+    "should_abstain": false,
+    "answer_contains": [
+      "PV module",
+      "inverter",
+      "solar battery"
+    ],
+    "required_citation_chunk_ids": [
+      "chunk-34f911a10fab1d8a3425a652"
+    ]
+  },
+  "ground_truth_source": "human_labelled",
+  "notes": "Labelled against the 12-chunk licensed Phase 3 corpus."
+}

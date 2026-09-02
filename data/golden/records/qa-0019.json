@@ -1,0 +1,16 @@
+{
+  "record_id": "qa-0019",
+  "task_type": "knowledge_qa",
+  "input_path": "data/golden/questions/qa-0019.txt",
+  "expected": {
+    "should_abstain": false,
+    "answer_contains": [
+      "current program guidance"
+    ],
+    "required_citation_chunk_ids": [
+      "chunk-fc223469c160a4f2f7fd229c"
+    ]
+  },
+  "ground_truth_source": "human_labelled",
+  "notes": "Labelled against the 12-chunk licensed Phase 3 corpus."
+}

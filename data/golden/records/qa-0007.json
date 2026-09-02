@@ -1,0 +1,16 @@
+{
+  "record_id": "qa-0007",
+  "task_type": "knowledge_qa",
+  "input_path": "data/golden/questions/qa-0007.txt",
+  "expected": {
+    "should_abstain": false,
+    "answer_contains": [
+      "system owner statutory declaration"
+    ],
+    "required_citation_chunk_ids": [
+      "chunk-966ebb24ec3aedfe9a92a7cd"
+    ]
+  },
+  "ground_truth_source": "human_labelled",
+  "notes": "Labelled against the 12-chunk licensed Phase 3 corpus."
+}

@@ -1,0 +1,24 @@
+{
+  "record_id": "site-0003",
+  "task_type": "site_assessment_extraction",
+  "input_path": "data/generated/site_notes/site-0003.txt",
+  "expected": {
+    "site_address": "105 Industrial Drive, Dandenong South VIC 3175",
+    "nmi": "6321808902",
+    "assessed_on": "2026-01-12",
+    "roof_material": "concrete tile",
+    "roof_planes.0.orientation": "E",
+    "roof_planes.0.tilt_degrees": 5.0,
+    "roof_planes.0.usable_area_m2": 250.0,
+    "roof_planes.1.orientation": "NW",
+    "roof_planes.1.tilt_degrees": 5.0,
+    "roof_planes.1.usable_area_m2": 160.0,
+    "phase_configuration": "three_phase",
+    "main_switch_rating_a": 250.0,
+    "existing_pv_kw": 20.0,
+    "battery_space_available": true,
+    "access_constraints": "internal ladder only; no crane on the western side"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: ['multi_page_table_split']"
+}

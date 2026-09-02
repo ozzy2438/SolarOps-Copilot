@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0047",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0047.pdf",
+  "expected": {
+    "retailer_name": "Redgum Electricity",
+    "nmi": "6291030796",
+    "account_number": "4213085543",
+    "site_address": "8 Example Street, Scoresby VIC 3179",
+    "billing_period.start": "2026-04-01",
+    "billing_period.end": "2026-06-29",
+    "issue_date": "2026-07-07",
+    "total_amount.amount": 8497.4,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 30450.9,
+    "peak_demand_kva": null,
+    "tariff_type": "time_of_use",
+    "tariff_code": "VDO-SB-TOU-CITIPOWER",
+    "solar_export_kwh": null,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

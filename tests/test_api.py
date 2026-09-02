@@ -30,6 +30,7 @@ def test_openapi_is_a_complete_map_of_the_service(client: TestClient) -> None:
         "/health/live",
         "/health/ready",
         "/metrics",
+        "/metrics/page",
         "/documents",
         "/documents/{document_id}",
         "/documents/{document_id}/extraction",
@@ -43,20 +44,6 @@ def test_openapi_is_a_complete_map_of_the_service(client: TestClient) -> None:
         "/admin/incidents",
     ]:
         assert expected in paths, f"{expected} is not registered"
-
-
-@pytest.mark.parametrize(
-    ("path", "phase"),
-    [
-        ("/admin/incidents", "Phase 4"),
-    ],
-)
-def test_unimplemented_routes_return_501_naming_their_phase(
-    client: TestClient, path: str, phase: str
-) -> None:
-    response = client.get(path)
-    assert response.status_code == 501
-    assert phase in response.json()["detail"]
 
 
 def test_review_list_is_no_longer_a_501(client: TestClient) -> None:

@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0036",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0036.pdf",
+  "expected": {
+    "retailer_name": "Harbourlight Retail",
+    "nmi": "6334529629",
+    "account_number": "4164569300",
+    "site_address": "14 Kerrigan Way, Laverton North VIC 3026",
+    "billing_period.start": "2026-06-30",
+    "billing_period.end": "2026-09-27",
+    "issue_date": "2026-10-05",
+    "total_amount.amount": 9712.95,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 28928.3,
+    "peak_demand_kva": null,
+    "tariff_type": "time_of_use",
+    "tariff_code": "VDO-SB-TOU-AUSNET",
+    "solar_export_kwh": 3312.5,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

@@ -1,0 +1,24 @@
+{
+  "record_id": "site-0021",
+  "task_type": "site_assessment_extraction",
+  "input_path": "data/generated/site_notes/site-0021.txt",
+  "expected": {
+    "site_address": "61 Harbour Parade, Laverton North VIC 3026",
+    "nmi": "6218820420",
+    "assessed_on": "2026-03-07",
+    "roof_material": "Klip-Lok steel",
+    "roof_planes.0.orientation": "N",
+    "roof_planes.0.tilt_degrees": 5.0,
+    "roof_planes.0.usable_area_m2": 400.0,
+    "roof_planes.1.orientation": "E",
+    "roof_planes.1.tilt_degrees": 5.0,
+    "roof_planes.1.usable_area_m2": 240.0,
+    "phase_configuration": "three_phase",
+    "main_switch_rating_a": null,
+    "existing_pv_kw": null,
+    "battery_space_available": true,
+    "access_constraints": "internal ladder only; no crane on the western side"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

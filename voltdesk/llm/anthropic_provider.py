@@ -5,8 +5,9 @@ Owned by: Phase 1. Fully implemented.
 Notes on the current Anthropic API surface, because getting these wrong is a silent
 quality regression rather than an error:
 
-- Adaptive thinking (`thinking={"type": "adaptive"}`) is the current mechanism. The
-  older fixed `budget_tokens` form is rejected with a 400 on current models.
+- Adaptive thinking (`thinking={"type": "adaptive"}`) is used only on the configured
+  models that support it. Haiku 4.5 rejects adaptive thinking, so its benchmark path
+  leaves thinking off instead of silently changing the token budget.
 - `temperature` / `top_p` are not accepted on current models; do not add them.
 - Assistant prefill is rejected; output shape is controlled with structured outputs.
 - A safety refusal returns HTTP 200 with `stop_reason == "refusal"`, so `stop_reason`
@@ -28,6 +29,8 @@ from voltdesk.llm.base import (
     ProviderError,
 )
 
+_ADAPTIVE_THINKING_MODELS = frozenset({"claude-opus-5", "claude-sonnet-5"})
+
 
 class AnthropicProvider(LLMProvider):
     """Adapter over the official `anthropic` SDK."""
@@ -47,10 +50,17 @@ class AnthropicProvider(LLMProvider):
         if self._client is None:
             import anthropic  # imported lazily: the package must import without the SDK
 
+            client_options: dict[str, Any] = {
+                "api_key": self._settings.anthropic_api_key.get_secret_value(),
+                "timeout": self._settings.llm_timeout_seconds,
+                "max_retries": self._settings.llm_max_retries,
+            }
+            workspace_id = self._settings.anthropic_workspace_id.get_secret_value().strip()
+            if workspace_id:
+                client_options["default_headers"] = {"anthropic-workspace-id": workspace_id}
+
             self._client = anthropic.Anthropic(
-                api_key=self._settings.anthropic_api_key.get_secret_value(),
-                timeout=self._settings.llm_timeout_seconds,
-                max_retries=self._settings.llm_max_retries,
+                **client_options,
             )
         return self._client
 
@@ -63,8 +73,10 @@ class AnthropicProvider(LLMProvider):
             "model": request.model_id,
             "max_tokens": request.max_tokens,
             "messages": [{"role": "user", "content": request.user_content}],
-            "thinking": {"type": "adaptive"},
         }
+        thinking = _thinking_config(request.model_id)
+        if thinking is not None:
+            kwargs["thinking"] = thinking
         if request.system is not None:
             # A list with a cache_control breakpoint: the system prompt is stable
             # across calls, so caching it is free money. See docs/ARCHITECTURE.md.
@@ -79,12 +91,15 @@ class AnthropicProvider(LLMProvider):
             kwargs["stop_sequences"] = request.stop_sequences
         if request.json_schema is not None:
             kwargs["output_config"] = {
-                "format": {"type": "json_schema", "schema": request.json_schema}
+                "format": {
+                    "type": "json_schema",
+                    "schema": _structured_output_schema(request.json_schema),
+                }
             }
 
         started = time.perf_counter()
         try:
-            response = client.messages.create(**kwargs)
+            response = _create_with_schema_fallback(client, kwargs)
         except anthropic.APITimeoutError as exc:
             raise ProviderError(
                 f"anthropic timeout: {exc}", retryable=True, outcome=CallOutcome.TIMEOUT
@@ -137,6 +152,44 @@ class AnthropicProvider(LLMProvider):
             stop_reason=stop_reason,
             raw_response_id=getattr(response, "id", None),
         )
+
+
+def _structured_output_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    """Adapt provider-neutral JSON Schema to Anthropic's supported subset."""
+    import anthropic
+
+    return anthropic.transform_schema(schema)
+
+
+def _thinking_config(model_id: str) -> dict[str, str] | None:
+    """Return only thinking modes that the exact configured model supports."""
+    if model_id in _ADAPTIVE_THINKING_MODELS:
+        return {"type": "adaptive"}
+    return None
+
+
+def _create_with_schema_fallback(client: Any, kwargs: dict[str, Any]) -> Any:
+    """Retry without grammar only when Anthropic rejects its compiled size.
+
+    Extraction prompts already carry the complete provider-neutral schema, and the
+    response is validated against that original Pydantic contract (with one repair
+    attempt) after generation. Small schemas keep constrained decoding; this fallback
+    is limited to the provider's explicit grammar-size rejection.
+    """
+    import anthropic
+
+    try:
+        return client.messages.create(**kwargs)
+    except anthropic.APIStatusError as exc:
+        if (
+            exc.status_code != 400
+            or "output_config" not in kwargs
+            or "compiled grammar is too large" not in str(exc).casefold()
+        ):
+            raise
+        fallback = dict(kwargs)
+        fallback.pop("output_config")
+        return client.messages.create(**fallback)
 
 
 def _usage_from(response: Any) -> TokenUsage:

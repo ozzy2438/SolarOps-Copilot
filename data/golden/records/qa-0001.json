@@ -2,12 +2,15 @@
   "record_id": "qa-0001",
   "task_type": "knowledge_qa",
   "input_path": "data/golden/questions/qa-0001.txt",
-  "ground_truth_source": "human_labelled",
-  "notes": "Deliberately unanswerable. The corpus contains connection guidelines for the DNSPs the company works with, but nothing about this jurisdiction. A system that answers this from general knowledge has failed the only test that matters - it must abstain, not approximate.",
   "expected": {
-    "should_abstain": true,
-    "abstention_reason": "no_relevant_evidence",
-    "answer_contains": [],
-    "required_citation_chunk_ids": []
-  }
+    "should_abstain": false,
+    "answer_contains": [
+      "12 months"
+    ],
+    "required_citation_chunk_ids": [
+      "chunk-c2a3b2142b8b747be493c895"
+    ]
+  },
+  "ground_truth_source": "human_labelled",
+  "notes": "Labelled against the 12-chunk licensed Phase 3 corpus."
 }

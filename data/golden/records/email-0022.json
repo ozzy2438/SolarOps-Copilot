@@ -1,0 +1,19 @@
+{
+  "record_id": "email-0022",
+  "task_type": "email_extraction",
+  "input_path": "data/generated/emails/email-0022.txt",
+  "expected": {
+    "thread_subject": "Quote request \u2014 Bayview Plastics 61 Harbour Parade, Laverton North VIC 3026",
+    "intent": "quote_request",
+    "company_name": "Bayview Plastics",
+    "site_address": "61 Harbour Parade, Laverton North VIC 3026",
+    "requested_system_kw": 75.0,
+    "requested_battery_kwh": null,
+    "deadline": "2026-03-15",
+    "message_count": 3,
+    "first_message_at": "2026-02-22T09:15:00+00:00",
+    "nmi": "6327588505"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

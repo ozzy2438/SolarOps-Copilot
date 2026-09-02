@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0002",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0002.pdf",
+  "expected": {
+    "retailer_name": "Redgum Electricity",
+    "nmi": "6312252233",
+    "account_number": "4118751672",
+    "site_address": "105 Industrial Drive, Dandenong South VIC 3175",
+    "billing_period.start": "2026-04-01",
+    "billing_period.end": "2026-06-29",
+    "issue_date": "2026-07-07",
+    "total_amount.amount": 5793.98,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 22838.1,
+    "peak_demand_kva": null,
+    "tariff_type": "flat",
+    "tariff_code": "VDO-SB-FLAT-CITIPOWER",
+    "solar_export_kwh": 2615.1,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: ['no_text_layer']"
+}

@@ -1,0 +1,16 @@
+{
+  "record_id": "qa-0025",
+  "task_type": "knowledge_qa",
+  "input_path": "data/golden/questions/qa-0025.txt",
+  "expected": {
+    "should_abstain": false,
+    "answer_contains": [
+      "at least five years"
+    ],
+    "required_citation_chunk_ids": [
+      "chunk-73decf989e3100c179c5185c"
+    ]
+  },
+  "ground_truth_source": "human_labelled",
+  "notes": "Labelled against the 12-chunk licensed Phase 3 corpus."
+}

@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0033",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0033.pdf",
+  "expected": {
+    "retailer_name": "Southline Power",
+    "nmi": "6234101603",
+    "account_number": "4107395088",
+    "site_address": "22 Perrin Court, Scoresby VIC 3179",
+    "billing_period.start": "2026-06-30",
+    "billing_period.end": "2026-09-27",
+    "issue_date": "2026-10-05",
+    "total_amount.amount": 7161.39,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 24360.7,
+    "peak_demand_kva": null,
+    "tariff_type": "flat",
+    "tariff_code": "VDO-SB-FLAT-JEMENA",
+    "solar_export_kwh": null,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

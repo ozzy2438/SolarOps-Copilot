@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0011",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0011.pdf",
+  "expected": {
+    "retailer_name": "Harbourlight Retail",
+    "nmi": "6327264802",
+    "account_number": "4287110804",
+    "site_address": "61 Harbour Parade, Dandenong South VIC 3175",
+    "billing_period.start": "2026-04-01",
+    "billing_period.end": "2026-06-29",
+    "issue_date": "2026-07-07",
+    "total_amount.amount": 7412.78,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 21315.6,
+    "peak_demand_kva": null,
+    "tariff_type": "flat",
+    "tariff_code": "VDO-SB-FLAT-AUSNET",
+    "solar_export_kwh": null,
+    "phase_configuration": "three_phase",
+    "page_count": 2
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: ['multi_page_table_split']"
+}

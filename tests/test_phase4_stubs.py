@@ -1,9 +1,8 @@
-"""Phase 4's stubs fail loudly and name their phase. Owned by Phase 1."""
+"""Phase 4 stub locations stay executable as their implementations land."""
 
 from __future__ import annotations
 
-import pytest
-
+from voltdesk.batch import run_daily_batch
 from voltdesk.evaluation.metrics import (
     abstention_precision_recall,
     coverage_accuracy_curve,
@@ -12,31 +11,31 @@ from voltdesk.evaluation.metrics import (
     field_recall,
     summarise,
 )
-from voltdesk.evaluation.runner import load_golden_set, run, run_benchmark
-
-pytestmark = pytest.mark.phase4
-
-
-def test_runner_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 4"):
-        load_golden_set()
-    with pytest.raises(NotImplementedError, match="Phase 4"):
-        run([], None)  # type: ignore[arg-type]
-    with pytest.raises(NotImplementedError, match="Phase 4"):
-        run_benchmark([])
+from voltdesk.evaluation.runner import load_golden_set
+from voltdesk.routing.task_router import TaskRouter
 
 
-@pytest.mark.parametrize(
-    "fn",
-    [
-        field_precision,
-        field_recall,
-        exact_match_rate,
-        abstention_precision_recall,
-        coverage_accuracy_curve,
-        summarise,
-    ],
-)
-def test_metrics_are_not_implemented(fn: object) -> None:
-    with pytest.raises(NotImplementedError, match="Phase 4"):
-        fn([])  # type: ignore[operator]
+def test_runner_stub_is_replaced() -> None:
+    assert len(load_golden_set()) == 150
+
+
+def test_metric_stubs_are_replaced() -> None:
+    assert field_precision([]) is None
+    assert field_recall([]) is None
+    assert exact_match_rate([]) is None
+    assert abstention_precision_recall([]) == (None, None)
+    assert len(coverage_accuracy_curve([])) == 21
+
+
+def test_summarise_rejects_an_empty_run() -> None:
+    try:
+        summarise([])
+    except ValueError as exc:
+        assert "empty" in str(exc)
+    else:  # pragma: no cover - explicit failure message for the retained stub test
+        raise AssertionError("summarise accepted an empty run")
+
+
+def test_operational_stubs_are_replaced() -> None:
+    assert callable(run_daily_batch)
+    assert TaskRouter.__name__ == "TaskRouter"

@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0035",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0035.pdf",
+  "expected": {
+    "retailer_name": "Northbeam Energy",
+    "nmi": "6341353023",
+    "account_number": "4137379832",
+    "site_address": "8 Example Street, Dandenong South VIC 3175",
+    "billing_period.start": "2026-04-01",
+    "billing_period.end": "2026-06-29",
+    "issue_date": "2026-07-07",
+    "total_amount.amount": 7157.22,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 27405.8,
+    "peak_demand_kva": null,
+    "tariff_type": "flat",
+    "tariff_code": "VDO-SB-FLAT-UNITED",
+    "solar_export_kwh": null,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

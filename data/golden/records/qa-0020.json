@@ -1,0 +1,16 @@
+{
+  "record_id": "qa-0020",
+  "task_type": "knowledge_qa",
+  "input_path": "data/golden/questions/qa-0020.txt",
+  "expected": {
+    "should_abstain": false,
+    "answer_contains": [
+      "every state and territory"
+    ],
+    "required_citation_chunk_ids": [
+      "chunk-e5dd6fe29b5354ce829440df"
+    ]
+  },
+  "ground_truth_source": "human_labelled",
+  "notes": "Labelled against the 12-chunk licensed Phase 3 corpus."
+}

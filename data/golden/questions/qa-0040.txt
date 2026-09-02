@@ -1,0 +1,1 @@
+What checksum algorithm validates an Australian NMI?

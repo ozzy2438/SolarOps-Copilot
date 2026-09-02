@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0019",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0019.pdf",
+  "expected": {
+    "retailer_name": "Northbeam Energy",
+    "nmi": "6329257797",
+    "account_number": "4270265808",
+    "site_address": "19 Freight Lane, Campbellfield VIC 3061",
+    "billing_period.start": "2026-01-01",
+    "billing_period.end": "2026-03-31",
+    "issue_date": "2026-04-08",
+    "total_amount.amount": 10838.83,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 33495.9,
+    "peak_demand_kva": null,
+    "tariff_type": "time_of_use",
+    "tariff_code": "VDO-SB-TOU-POWERCOR",
+    "solar_export_kwh": null,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

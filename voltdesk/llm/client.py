@@ -148,7 +148,11 @@ class LLMClient:
                 prompt_version_hash=prompt_version_hash(request.system, prompt_template),
                 usage=usage,
                 cost_usd=compute_cost_usd(
-                    request.model_id, usage.input_tokens, usage.output_tokens
+                    request.model_id,
+                    usage.input_tokens,
+                    usage.output_tokens,
+                    cache_read_input_tokens=usage.cache_read_input_tokens,
+                    cache_creation_input_tokens=usage.cache_creation_input_tokens,
                 ),
                 latency_ms=latency_ms,
                 outcome=outcome,

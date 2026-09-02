@@ -18,6 +18,7 @@ from voltdesk.llm.base import (
     ProviderError,
 )
 from voltdesk.llm.client import LLMClient, prompt_version_hash
+from voltdesk.llm.pricing import compute_cost_usd
 from voltdesk.llm.registry import ProviderRegistry
 
 
@@ -47,7 +48,12 @@ class FakeProvider(LLMProvider):
             provider=self.provider,
             model_id=request.model_id,
             text="ok",
-            usage=TokenUsage(input_tokens=100, output_tokens=50),
+            usage=TokenUsage(
+                input_tokens=100,
+                output_tokens=50,
+                cache_read_input_tokens=20,
+                cache_creation_input_tokens=10,
+            ),
             latency_ms=5,
             outcome=CallOutcome.SUCCESS,
         )
@@ -94,7 +100,15 @@ def test_success_writes_exactly_one_audit_record(routing_decision: RoutingDecisi
     record = audit.records[0]
     assert record.outcome == CallOutcome.SUCCESS
     assert record.usage.input_tokens == 100
-    assert record.cost_usd > 0
+    assert record.cost_usd == pytest.approx(
+        compute_cost_usd(
+            "claude-opus-5",
+            100,
+            50,
+            cache_read_input_tokens=20,
+            cache_creation_input_tokens=10,
+        )
+    )
     assert record.redaction_applied is True
     assert record.document_id == "doc-1"
 

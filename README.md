@@ -20,22 +20,23 @@ redaction before any third-party call, and an audit row for every model call eve
 
 ## Status
 
-**Phase 1 of 4 — foundation complete.** The contracts, the trust boundary, the CRM
-client, the audit log and the API skeleton are implemented and tested. The two
-capabilities themselves are not yet built; every unimplemented component raises
-`NotImplementedError` naming the phase that owns it, and every unimplemented route
-returns `501` naming the same.
+**Phases 1–4 complete.** Document intake/extraction, cited knowledge retrieval, the
+150-record evaluation harness and operational surfaces are implemented. Phase 4 ran
+both selected providers from one commit, adopted a measured task router, and retained
+the failures and limitations in the results and incident log.
 
 | Phase | Scope | Status |
 |---|---|---|
 | 1 | Contracts, provider abstraction, CRM client, audit log, redaction, API skeleton, migrations | **Done** |
-| 2 | Parsers, synthetic corpus, extraction, confidence scoring, CRM write path, review queue | Not started |
-| 3 | Corpus ingestion, chunking, embeddings, retrieval, cited synthesis, abstention | Not started |
-| 4 | Golden set, Claude vs GPT benchmark, measured router, metrics page, daily batch, incident log | Not started |
+| 2 | Parsers, synthetic corpus, extraction, confidence scoring, CRM write path, review queue | **Done** |
+| 3 | Corpus ingestion, chunking, embeddings, retrieval, cited synthesis, abstention | **Done** |
+| 4 | Golden set, Haiku vs GPT Mini benchmark, measured router, metrics page, daily batch, incident log | **Done** |
 
-There are no benchmark numbers yet. Phase 4 produces them, and
-`voltdesk/llm/pricing.py` will refuse to publish a cost figure derived from an
-unverified price until then (ADR-0008).
+The measured router uses `gpt-4o-mini` for bills, emails and QA, and
+`claude-haiku-4-5` for site assessments. The numbers and their uncertainty are in
+[`docs/RESULTS.md`](docs/RESULTS.md). Confidence did not calibrate monotonically, so
+the 0.85 auto-write threshold remains an unpromoted placeholder, not a production
+safety claim.
 
 ## Run it locally
 
@@ -48,9 +49,42 @@ curl -s localhost:8000/health/live     # {"status":"ok"}
 ```
 
 `localhost:8000/docs` is the full API surface. `localhost:8080` is EspoCRM.
+The rendered operational view is at `localhost:8000/metrics/page`.
 
 `make down` stops the stack and keeps its data. Deleting VoltDesk's volumes is a
 separate, confirmed command (`make destroy`).
+
+### Rebuilding the golden set
+
+The 110 synthetic extraction inputs used by the golden records are reproducible
+Tier B artefacts and are intentionally ignored under `data/generated/`. Materialise
+them before rebuilding the tracked golden JSON records:
+
+```bash
+make golden-set
+```
+
+This runs `scripts/materialise_generated.py` before `scripts/build_golden_set.py`.
+The `test` and `verify` targets materialise the inputs automatically as well.
+
+### Evaluation and daily regression check
+
+Configure only the models you intend to call. Workspace-scoped Anthropic keys may set
+`VOLTDESK_ANTHROPIC_WORKSPACE_ID`; ordinary keys leave it unset and no workspace
+header is sent.
+
+```bash
+python -m voltdesk.evaluation.runner --model claude-haiku-4-5 --pilot-per-task 2
+python -m voltdesk.evaluation.runner --benchmark
+python -m voltdesk.batch --once
+python -m voltdesk.batch --schedule   # enqueue the first RQ run for 24 hours later
+```
+
+The Compose worker runs with RQ's scheduler enabled. Invoke `--schedule` once per
+deployment; each scheduled job enqueues its successor after it runs. The reduced
+daily set is two records per task and opens an `app.incidents` row when exact match or
+field recall drops by more than five percentage points from the latest comparable
+run.
 
 ### Ports
 
@@ -126,10 +160,10 @@ Full detail, including the failure-mode table: [`docs/ARCHITECTURE.md`](docs/ARC
 - **Every model call is audited, including the failures.** The audit write is in a
   `finally` block. Routing rationale, prompt version hash, tokens, cost at call time,
   latency, outcome, and whether redaction was applied.
-- **Unverified facts are marked, never invented.** Phase 1 did not have an OpenAI
-  credential or a live EspoCRM instance, so those prices and request shapes are
-  `TODO(verify)` and the cost path refuses to publish from them. `grep -rn "TODO(verify)"`
-  shows everything still open.
+- **Unverified facts are marked, never invented.** OpenAI pricing and live EspoCRM
+  request shapes were verified in later phases; unresolved licences and NMI rules
+  remain explicitly marked `TODO(verify)`. The cost path still refuses to publish
+  from any model entry whose price is unverified.
 - **Synthetic data with real physics.** Names and addresses are fabricated; tariff
   structures and interval data are real, because a synthetic bill with invented rates
   teaches a parser nothing (ADR-0013).
@@ -139,10 +173,12 @@ Full detail, including the failure-mode table: [`docs/ARCHITECTURE.md`](docs/ARC
 | Document | What it answers |
 |---|---|
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Components, both request flows, every failure mode, the trust boundary |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | 13 ADRs — why each non-obvious choice was made, and its consequences |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | 19 ADRs — why each non-obvious choice was made, and its consequences |
 | [`docs/SCOPE.md`](docs/SCOPE.md) | What is in, what is permanently out, and why |
 | [`docs/GUARDRAILS.md`](docs/GUARDRAILS.md) | Redaction policy, injection threat model, confidence bands, retry and breaker |
 | [`docs/EVALUATION.md`](docs/EVALUATION.md) | The 150-record golden set and every metric definition |
+| [`docs/RESULTS.md`](docs/RESULTS.md) | Same-commit benchmark results, uncertainty, router table and limitations |
+| [`docs/INCIDENTS.md`](docs/INCIDENTS.md) | Real failures, blast radius, causes, remediation and related call IDs |
 | [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md) | Tier A real / Tier B synthetic, and the licence rule |
 | [`docs/HANDOFF.md`](docs/HANDOFF.md) | Orientation for the next phase: invariants, verification, open TODOs |
 | [`voltdesk/contracts/README.md`](voltdesk/contracts/README.md) | The add-fields-never-rename rule and why it is load-bearing |

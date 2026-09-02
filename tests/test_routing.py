@@ -21,12 +21,11 @@ class _Available(LLMProvider):
         raise NotImplementedError
 
 
-def test_static_router_returns_the_default_and_says_it_is_a_default() -> None:
+def test_static_router_compatibility_name_returns_the_measured_policy() -> None:
     decision = StaticRouter().route(TaskType.BILL_EXTRACTION)
-    assert decision.strategy == RoutingStrategy.STATIC_DEFAULT
-    assert decision.chosen.model_id == "claude-opus-5"
-    # The rationale must not read like a measured finding.
-    assert "not a measured choice" in decision.rationale
+    assert decision.strategy == RoutingStrategy.TASK_TABLE
+    assert decision.chosen.model_id == "gpt-4o-mini"
+    assert "eval-" in decision.rationale
 
 
 def test_fallback_crosses_to_the_other_provider_when_it_is_usable() -> None:
@@ -39,7 +38,7 @@ def test_fallback_crosses_to_the_other_provider_when_it_is_usable() -> None:
     router = StaticRouter(registry)
     fallback = router.fallback(router.route(TaskType.BILL_EXTRACTION))
     assert fallback is not None
-    assert fallback.chosen.provider == Provider.OPENAI
+    assert fallback.chosen.provider == Provider.ANTHROPIC
     assert fallback.strategy == RoutingStrategy.FALLBACK_AFTER_ERROR
     assert fallback.fallback_of is not None
 
@@ -47,8 +46,8 @@ def test_fallback_crosses_to_the_other_provider_when_it_is_usable() -> None:
 def test_fallback_returns_none_rather_than_degrading_to_nothing() -> None:
     registry = ProviderRegistry(
         {
-            Provider.ANTHROPIC: _Available(Provider.ANTHROPIC),
-            Provider.OPENAI: _Available(Provider.OPENAI, available=False),
+            Provider.ANTHROPIC: _Available(Provider.ANTHROPIC, available=False),
+            Provider.OPENAI: _Available(Provider.OPENAI),
         }
     )
     router = StaticRouter(registry)

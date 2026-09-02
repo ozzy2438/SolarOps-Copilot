@@ -1,0 +1,24 @@
+{
+  "record_id": "site-0016",
+  "task_type": "site_assessment_extraction",
+  "input_path": "data/generated/site_notes/site-0016.txt",
+  "expected": {
+    "site_address": "3 Warehouse Road, Scoresby VIC 3179",
+    "nmi": null,
+    "assessed_on": "2026-02-20",
+    "roof_material": "asbestos cement sheet",
+    "roof_planes.0.orientation": "N",
+    "roof_planes.0.tilt_degrees": 5.0,
+    "roof_planes.0.usable_area_m2": 275.0,
+    "roof_planes.1.orientation": "E",
+    "roof_planes.1.tilt_degrees": 5.0,
+    "roof_planes.1.usable_area_m2": 140.0,
+    "phase_configuration": "three_phase",
+    "main_switch_rating_a": null,
+    "existing_pv_kw": 10.0,
+    "battery_space_available": true,
+    "access_constraints": "internal ladder only; no crane on the western side"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

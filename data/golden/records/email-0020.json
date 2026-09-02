@@ -1,0 +1,19 @@
+{
+  "record_id": "email-0020",
+  "task_type": "email_extraction",
+  "input_path": "data/generated/emails/email-0020.txt",
+  "expected": {
+    "thread_subject": "Quote request \u2014 Yarra Parts Wholesale 3 Warehouse Road, Somerton VIC 3062",
+    "intent": "quote_request",
+    "company_name": "Yarra Parts Wholesale",
+    "site_address": "3 Warehouse Road, Somerton VIC 3062",
+    "requested_system_kw": 125.0,
+    "requested_battery_kwh": 20.0,
+    "deadline": "2026-03-13",
+    "message_count": 3,
+    "first_message_at": "2026-02-20T09:15:00+00:00",
+    "nmi": "6387524154"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

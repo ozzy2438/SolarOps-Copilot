@@ -2,23 +2,24 @@
   "record_id": "bill-0001",
   "task_type": "bill_extraction",
   "input_path": "data/generated/bills/bill-0001.pdf",
-  "ground_truth_source": "generator_seed",
-  "notes": "Retailer A layout, single page, flat tariff, no existing solar. The easy case - if this one fails, the parser is broken rather than imprecise.",
   "expected": {
     "retailer_name": "Northbeam Energy",
-    "nmi": "6305888444",
-    "site_address": "14 Kerrigan Way, Dandenong South VIC 3175",
+    "nmi": "6343849730",
+    "account_number": "4125267841",
+    "site_address": "19 Freight Lane, Scoresby VIC 3179",
     "billing_period.start": "2026-01-01",
     "billing_period.end": "2026-03-31",
     "issue_date": "2026-04-08",
-    "total_amount.amount": 8421.55,
+    "total_amount.amount": 7412.78,
     "total_amount.is_gst_inclusive": true,
-    "total_consumption_kwh": 41230.0,
+    "total_consumption_kwh": 21315.6,
     "peak_demand_kva": null,
     "tariff_type": "flat",
-    "tariff_code": "NB-COM-FLAT",
+    "tariff_code": "VDO-SB-FLAT-AUSNET",
     "solar_export_kwh": null,
     "phase_configuration": "three_phase",
     "page_count": 1
-  }
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: ['skewed_scan', 'no_text_layer']"
 }

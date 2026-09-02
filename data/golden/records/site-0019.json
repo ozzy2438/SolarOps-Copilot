@@ -1,0 +1,24 @@
+{
+  "record_id": "site-0019",
+  "task_type": "site_assessment_extraction",
+  "input_path": "data/generated/site_notes/site-0019.txt",
+  "expected": {
+    "site_address": "14 Kerrigan Way, Scoresby VIC 3179",
+    "nmi": null,
+    "assessed_on": "2026-03-01",
+    "roof_material": "concrete tile",
+    "roof_planes.0.orientation": "W",
+    "roof_planes.0.tilt_degrees": 5.0,
+    "roof_planes.0.usable_area_m2": 350.0,
+    "roof_planes.1.orientation": "N",
+    "roof_planes.1.tilt_degrees": 5.0,
+    "roof_planes.1.usable_area_m2": 200.0,
+    "phase_configuration": "three_phase",
+    "main_switch_rating_a": 250.0,
+    "existing_pv_kw": 25.0,
+    "battery_space_available": true,
+    "access_constraints": "internal ladder only; no crane on the western side"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}

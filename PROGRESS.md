@@ -379,3 +379,90 @@ vector query and re-embed the whole corpus if it changes. Before claiming full l
 acceptance, connect an Anthropic credential through the normal secure environment
 flow and rerun only the in-corpus `/qa/ask` smoke; do not paste a key into chat or add
 an extractive fallback that bypasses `LLMClient`.
+
+---
+
+## Phase 4 — report
+
+**Status:** complete, with the confidence threshold deliberately unpromoted and the
+synthetic-data limitation retained as a blocking caveat for production claims.
+
+**Implemented:**
+
+- The deterministic 150-record set and its 110 ignored synthetic inputs are
+  materialised by the verification path, so a fresh checkout does not depend on files
+  left in a developer worktree.
+- The resumable runner checkpoints every record, records a committed git SHA and uses
+  only the operator-approved `claude-haiku-4-5` and `gpt-4o-mini` benchmark pair.
+- The Anthropic adapter supports the optional workspace header and normalises
+  provider structured-output schemas; capability-gated thinking and oversized-grammar
+  fallback are covered by regression tests.
+- `TaskRouter` replaces the guessed default with a measured per-task table. The
+  historical `StaticRouter()` name is a compatibility constructor for existing Phase
+  2/3 call sites.
+- `/metrics/page` renders trailing-24-hour audit totals, cost, p95, outcome mix,
+  abstention, review depth and redaction coverage. Admin evaluation and incident
+  routes read real database rows; starting an evaluation enqueues an RQ job.
+- `voltdesk.batch` processes today's received documents, writes an eight-record daily
+  canary evaluation and opens an incident when exact match or recall drops more than
+  five points from the latest comparable run. The Compose worker has RQ scheduling
+  enabled; `--schedule` starts the self-renewing daily chain.
+- Three real local-development incidents are documented with blast radius, root cause,
+  remediation and related call IDs where calls existed.
+
+**Benchmark headline:** On 150 records from commit `f1f10ad`, Haiku exact match was
+46/150 (30.67%, Wilson 95% 23.85–38.45%) and GPT Mini was 17/150 (11.33%,
+7.20–17.40%). The non-overlap is an overall finding, but it is driven by site
+assessment. GPT Mini had higher field recall (80.14% versus 75.73%) and lower measured
+evaluation cost ($0.193353 versus $0.762898). Full run IDs and per-task uncertainty
+are in `docs/RESULTS.md`.
+
+**Router table adopted:** bill → GPT Mini (exact tied 1/50; higher recall and lower
+cost); email → GPT Mini (exact tied 0/30; higher recall and lower cost); QA → GPT Mini
+(16/40 versus 18/40 with overlapping intervals, much lower cost); site → Haiku (27/30
+versus 0/30, non-overlapping intervals); schema repair → GPT Mini (both measured,
+lower cost).
+
+**Confidence threshold:** old 0.85 → remains 0.85 as an **unpromoted placeholder**.
+The measured curve cannot justify a replacement.
+
+**Was confidence monotonic in accuracy?** **NO.** Routed extraction-field accuracy
+was 96.06% at confidence 0.95 and fell to 95.05% at 1.00. Confidence is not calibrated;
+0.85 must not be presented as a production safety boundary.
+
+**Live daily batch:** `python -m voltdesk.batch --once` completed at clean commit
+`637d8c6b088c156b69925c372a4fed892ca6ff9c`. Run
+`eval-2dffaa07-b552-41b0-b373-60b03cb928c8` wrote 8 records, made 7 successful GPT
+Mini calls and 0 provider failures, cost $0.008964, processed 0 newly received
+documents and opened no regression incident because no comparable prior daily run
+existed. `claude-opus-5` calls in this work: 0.
+
+**Incidents recorded:** 3 — clean-clone inputs missing; both pilot provider boundaries
+rejected their initial schemas/configuration; PostgreSQL interruption caused one
+successful Haiku call to be repeated after resume.
+
+**Verification:** `make verify` passed with ruff clean, strict mypy clean across 81
+source files, 158 tests passed and 15 schemas unchanged. Against the live isolated
+PostgreSQL database, `/metrics/page` returned HTTP 200 with two `p95` labels,
+`/admin/evaluations/{run_id}` returned the stored daily run and `/admin/incidents`
+returned HTTP 200. After pushing `f8a1d0e`, a fresh GitHub clone with a new Python
+3.12 virtual environment and no `.env` independently produced the same `verify: OK`,
+including materialising all 110 ignored generated inputs; the clean worktree remained
+empty afterwards.
+
+**Acceptance override:** The Phase 4 brief named `claude-opus-5` and `gpt-4o`; the
+operator explicitly replaced them with `claude-haiku-4-5` and `gpt-4o-mini`. The old
+models were not called. All published comparisons use the two approved models at one
+commit.
+
+**Contract changes:** none.
+
+**ADRs added:** 0017 (optional Anthropic workspace header), 0018 (same-commit measured
+task routing), 0019 (do not promote an uncalibrated confidence threshold).
+
+**What the next person should not trust in these numbers:** The 110 extraction
+records are all generator-labelled synthetic artefacts; this checkout has none of the
+target human-labelled/reviewer-corrected extraction minority. QA labels are human, but
+both models over-abstained and citation correctness used only three and one answered
+records. Prompt-injection resistance was not benchmarked. Provider latency is one
+development-machine observation, not an SLO.

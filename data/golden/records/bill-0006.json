@@ -1,0 +1,25 @@
+{
+  "record_id": "bill-0006",
+  "task_type": "bill_extraction",
+  "input_path": "data/generated/bills/bill-0006.pdf",
+  "expected": {
+    "retailer_name": "Northbeam Energy",
+    "nmi": "6351496460",
+    "account_number": "4115999067",
+    "site_address": "22 Perrin Court, Somerton VIC 3062",
+    "billing_period.start": "2026-06-30",
+    "billing_period.end": "2026-09-27",
+    "issue_date": "2026-10-05",
+    "total_amount.amount": 9712.95,
+    "total_amount.is_gst_inclusive": true,
+    "total_consumption_kwh": 28928.3,
+    "peak_demand_kva": null,
+    "tariff_type": "time_of_use",
+    "tariff_code": "VDO-SB-TOU-AUSNET",
+    "solar_export_kwh": 3312.5,
+    "phase_configuration": "three_phase",
+    "page_count": 1
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: ['handwritten_notes']"
+}

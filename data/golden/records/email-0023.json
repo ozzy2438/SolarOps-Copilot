@@ -1,0 +1,19 @@
+{
+  "record_id": "email-0023",
+  "task_type": "email_extraction",
+  "input_path": "data/generated/emails/email-0023.txt",
+  "expected": {
+    "thread_subject": "Quote request \u2014 Yarra Parts Wholesale 14 Kerrigan Way, Campbellfield VIC 3061",
+    "intent": "quote_request",
+    "company_name": "Yarra Parts Wholesale",
+    "site_address": "14 Kerrigan Way, Campbellfield VIC 3061",
+    "requested_system_kw": 100.0,
+    "requested_battery_kwh": 20.0,
+    "deadline": "2026-03-16",
+    "message_count": 3,
+    "first_message_at": "2026-02-23T09:15:00+00:00",
+    "nmi": "6214846820"
+  },
+  "ground_truth_source": "generator_seed",
+  "notes": "Synthetic generator seed 7; defects: []"
+}
