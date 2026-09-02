@@ -9,7 +9,7 @@ import pytest
 
 from voltdesk.config import Settings
 from voltdesk.llm import anthropic_provider
-from voltdesk.llm.anthropic_provider import _structured_output_schema
+from voltdesk.llm.anthropic_provider import _structured_output_schema, _thinking_config
 
 
 @pytest.mark.parametrize(
@@ -72,3 +72,9 @@ def test_structured_output_schema_removes_unsupported_numeric_constraints() -> N
     assert "maximum" in confidence["description"]
     assert transformed["additionalProperties"] is False
     assert source["properties"]["confidence"]["minimum"] == 0.0
+
+
+def test_thinking_configuration_matches_model_capability() -> None:
+    assert _thinking_config("claude-haiku-4-5") is None
+    assert _thinking_config("claude-opus-5") == {"type": "adaptive"}
+    assert _thinking_config("claude-sonnet-5") == {"type": "adaptive"}

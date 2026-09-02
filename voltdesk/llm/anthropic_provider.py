@@ -5,8 +5,9 @@ Owned by: Phase 1. Fully implemented.
 Notes on the current Anthropic API surface, because getting these wrong is a silent
 quality regression rather than an error:
 
-- Adaptive thinking (`thinking={"type": "adaptive"}`) is the current mechanism. The
-  older fixed `budget_tokens` form is rejected with a 400 on current models.
+- Adaptive thinking (`thinking={"type": "adaptive"}`) is used only on the configured
+  models that support it. Haiku 4.5 rejects adaptive thinking, so its benchmark path
+  leaves thinking off instead of silently changing the token budget.
 - `temperature` / `top_p` are not accepted on current models; do not add them.
 - Assistant prefill is rejected; output shape is controlled with structured outputs.
 - A safety refusal returns HTTP 200 with `stop_reason == "refusal"`, so `stop_reason`
@@ -27,6 +28,8 @@ from voltdesk.llm.base import (
     LLMProvider,
     ProviderError,
 )
+
+_ADAPTIVE_THINKING_MODELS = frozenset({"claude-opus-5", "claude-sonnet-5"})
 
 
 class AnthropicProvider(LLMProvider):
@@ -70,8 +73,10 @@ class AnthropicProvider(LLMProvider):
             "model": request.model_id,
             "max_tokens": request.max_tokens,
             "messages": [{"role": "user", "content": request.user_content}],
-            "thinking": {"type": "adaptive"},
         }
+        thinking = _thinking_config(request.model_id)
+        if thinking is not None:
+            kwargs["thinking"] = thinking
         if request.system is not None:
             # A list with a cache_control breakpoint: the system prompt is stable
             # across calls, so caching it is free money. See docs/ARCHITECTURE.md.
@@ -154,6 +159,13 @@ def _structured_output_schema(schema: dict[str, Any]) -> dict[str, Any]:
     import anthropic
 
     return anthropic.transform_schema(schema)
+
+
+def _thinking_config(model_id: str) -> dict[str, str] | None:
+    """Return only thinking modes that the exact configured model supports."""
+    if model_id in _ADAPTIVE_THINKING_MODELS:
+        return {"type": "adaptive"}
+    return None
 
 
 def _usage_from(response: Any) -> TokenUsage:
