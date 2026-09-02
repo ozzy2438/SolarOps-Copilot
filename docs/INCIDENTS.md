@@ -2,8 +2,10 @@
 
 ## 2026-09-02 — Clean-clone golden-set inputs were missing
 
-**What happened:** The Phase 4 report said `136 passed`, but a clean clone reported
-`134/2 failed`. In the words of the handoff: “Faz 4 raporu 136 passed dedi, temiz klonda 134/2 failed; kök neden gitignore edilmiş üretilmiş veriye bağımlılık”. The failing checks were the golden-set checks that load extraction records.
+**What happened:** The Phase 4 report recorded `136 passed`, while a clean clone
+exposed `134 passed` and `2 failed` because verification depended on generated inputs
+excluded by `.gitignore`. The failing checks were the golden-set checks that load
+extraction records.
 
 **Blast radius:** A fresh checkout could not load the 110 extraction records whose
 `input_path` points into `data/generated/`. Existing worktrees with previously
