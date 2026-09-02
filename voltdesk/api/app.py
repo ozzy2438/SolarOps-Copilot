@@ -12,7 +12,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from voltdesk import __version__
-from voltdesk.api.routes import admin, documents, health, metrics, qa, review
+from voltdesk.api.routes import admin, documents, health, metrics, metrics_page, qa, review
 from voltdesk.logging_setup import configure_logging, get_logger
 
 logger = get_logger(__name__)
@@ -27,13 +27,14 @@ def create_app() -> FastAPI:
         description=(
             "LLM service layer for commercial solar and battery operations. "
             "Two capabilities: document intake to CRM, and cited knowledge Q&A with "
-            "explicit abstention. Routes that return 501 name the phase that implements "
-            "them."
+            "explicit abstention. Operational routes expose evaluation runs, incidents "
+            "and a rendered metrics page."
         ),
     )
 
     app.include_router(health.router)
     app.include_router(metrics.router)
+    app.include_router(metrics_page.router)
     app.include_router(documents.router)
     app.include_router(qa.router)
     app.include_router(review.router)

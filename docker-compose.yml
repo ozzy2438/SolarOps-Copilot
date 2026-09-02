@@ -76,7 +76,7 @@ services:
 
   worker:
     build: .
-    command: rq worker --url redis://redis:6379/0 voltdesk
+    command: rq worker --with-scheduler --url redis://redis:6379/0 voltdesk
     environment:
       VOLTDESK_DATABASE_URL: postgresql+psycopg://voltdesk:voltdesk@postgres:5432/voltdesk
       VOLTDESK_REDIS_URL: redis://redis:6379/0

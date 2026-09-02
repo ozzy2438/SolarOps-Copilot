@@ -19,6 +19,7 @@ from voltdesk.llm.pricing import assert_verified, get_price
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 RecordExecutor = Callable[[GoldenRecord, ModelChoice], RecordResult]
+BENCHMARK_MODEL_IDS = ("claude-haiku-4-5", "gpt-4o-mini")
 
 
 def load_golden_set(path: str = "data/golden/records") -> list[GoldenRecord]:
@@ -142,7 +143,7 @@ def _choice(model_id: str) -> ModelChoice:
     return ModelChoice(provider=price.provider, model_id=price.model_id)
 
 
-def _pilot(records: Sequence[GoldenRecord], per_task: int) -> list[GoldenRecord]:
+def select_pilot(records: Sequence[GoldenRecord], per_task: int) -> list[GoldenRecord]:
     if per_task <= 0:
         return list(records)
     counts: Counter[str] = Counter()
@@ -159,7 +160,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--model", help="One exact model id")
-    mode.add_argument("--benchmark", action="store_true", help="Run Claude Opus 5 and GPT-4o")
+    mode.add_argument(
+        "--benchmark",
+        action="store_true",
+        help="Run Claude Haiku 4.5 and GPT-4o Mini",
+    )
     parser.add_argument("--pilot-per-task", type=int, default=0)
     parser.add_argument("--resume-run-id")
     return parser.parse_args(argv)
@@ -167,16 +172,21 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
-    records = _pilot(load_golden_set(), args.pilot_per_task)
+    records = select_pilot(load_golden_set(), args.pilot_per_task)
     if args.benchmark:
-        results = [
-            run(records, model) for model in [_choice("claude-opus-5"), _choice("gpt-4o")]
-        ]
+        results = [run(records, _choice(model_id)) for model_id in BENCHMARK_MODEL_IDS]
     else:
         results = [run(records, _choice(args.model), resume_run_id=args.resume_run_id)]
     for result in results:
         print(result.model_dump_json(exclude={"results"}))
     return 0
+
+
+def run_model(model_id: str, pilot_per_task: int = 0) -> dict[str, object]:
+    """RQ-safe entry point used by the admin endpoint and daily batch."""
+    records = select_pilot(load_golden_set(), pilot_per_task)
+    result = run(records, _choice(model_id))
+    return result.model_dump(mode="json", exclude={"results"})
 
 
 if __name__ == "__main__":

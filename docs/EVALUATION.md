@@ -149,8 +149,13 @@ template — a new record is a copy of the nearest one with the values changed.
 ## Running it
 
 ```bash
-python -m voltdesk.evaluation.runner --model claude-opus-5      # Phase 4
+python -m voltdesk.evaluation.runner --model claude-haiku-4-5
+python -m voltdesk.evaluation.runner --model gpt-4o-mini
+python -m voltdesk.evaluation.runner --benchmark
 ```
+
+The Phase 4 operator explicitly excluded `claude-opus-5`; `--benchmark` therefore
+runs only `claude-haiku-4-5` and `gpt-4o-mini`.
 
 Every run records the git SHA it ran at. Results land in `app.evaluation_runs`. A run
 whose SHA is not in the repository's history is not reproducible and should not be

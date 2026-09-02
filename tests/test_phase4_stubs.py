@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from voltdesk.batch import run_daily_batch
 from voltdesk.evaluation.metrics import (
     abstention_precision_recall,
     coverage_accuracy_curve,
@@ -11,6 +12,7 @@ from voltdesk.evaluation.metrics import (
     summarise,
 )
 from voltdesk.evaluation.runner import load_golden_set
+from voltdesk.routing.task_router import TaskRouter
 
 
 def test_runner_stub_is_replaced() -> None:
@@ -32,3 +34,8 @@ def test_summarise_rejects_an_empty_run() -> None:
         assert "empty" in str(exc)
     else:  # pragma: no cover - explicit failure message for the retained stub test
         raise AssertionError("summarise accepted an empty run")
+
+
+def test_operational_stubs_are_replaced() -> None:
+    assert callable(run_daily_batch)
+    assert TaskRouter.__name__ == "TaskRouter"

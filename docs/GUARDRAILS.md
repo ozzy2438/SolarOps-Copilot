@@ -119,9 +119,9 @@ returns `None` when it is also unusable.
 
 **Returning `None` is a real answer.** Degrading to a model whose quality on this task
 has never been measured is worse than failing the request and saying so. The fallback
-decision is recorded with `strategy=fallback_after_error` and a rationale that admits
-the quality is unmeasured, so the audit log never presents a degraded call as a normal
-one.
+decision is recorded with `strategy=fallback_after_error`. Phase 4 limits fallback to
+the other model measured in the two same-commit full runs; the rationale names those
+runs, so the audit log never presents a degraded call as a normal one.
 
 ## 6. Human-in-the-loop: the confidence bands
 
@@ -144,11 +144,31 @@ Three bands, from settings:
 
 ### Why 0.85
 
-It is a starting point, not a measurement. Phase 4 produces the coverage-accuracy
-curve (`docs/EVALUATION.md`) and re-derives the threshold from it. The threshold is a
-setting, not a constant, precisely so that re-deriving it is a config change.
+It remains a starting point, not a calibrated threshold. Phase 4's measured curve
+rose through 0.95 and then fell at 1.00; accuracy therefore was not monotonic in
+confidence. Per the evaluation contract, no new threshold can be derived from that
+curve. The setting stays at 0.85 but is **not promoted for unattended production
+write decisions**. See `docs/RESULTS.md` and ADR-0019.
 
-## 7. What the audit log guarantees
+## 7. Benchmark-exposed guardrail gaps
+
+1. **Over-abstention:** both models found all 15 required QA abstentions but answered
+   only three and one of the 25 answerable questions. Citation correctness was 100%
+   over that tiny answered denominator. Monitor abstention precision and answer
+   coverage together; never use citation correctness alone as a readiness gate.
+2. **Uncalibrated confidence:** fields assigned confidence 1.0 were less accurate than
+   the fields clearing 0.95. Uniform or maximal confidence is not proof. Keep review
+   and source-quote controls in force and do not auto-promote the threshold.
+3. **Validation after a successful call:** three GPT bill records remained invalid
+   after one repair. Retry correctly does not cover this failure; the bound remains
+   one repair followed by review. Repeating an invalid generation indefinitely would
+   add cost without establishing correctness.
+4. **Injection coverage gap:** the golden set had no labelled injection challenge
+   records. The mitigations in section 2 remain, but Phase 4 adds no claim that they
+   were benchmarked. A future, separately versioned evaluation set should add such
+   cases before any stronger claim is made.
+
+## 8. What the audit log guarantees
 
 Every model call writes a row, success or failure — the write is in a `finally` block.
 Each row carries the routing rationale, the prompt version hash, token counts, cost at

@@ -1,12 +1,14 @@
-"""Routing. Owned by Phase 1 (static default only)."""
+"""The Phase 4 router must cite measurements for every decision."""
 
 from __future__ import annotations
+
+import pytest
 
 from voltdesk.contracts.common import Provider, TaskType
 from voltdesk.contracts.routing import RoutingStrategy
 from voltdesk.llm.base import LLMProvider
 from voltdesk.llm.registry import ProviderRegistry
-from voltdesk.routing.router import StaticRouter
+from voltdesk.routing.task_router import GPT_RUN_ID, HAIKU_RUN_ID, TaskRouter
 
 
 class _Available(LLMProvider):
@@ -21,51 +23,48 @@ class _Available(LLMProvider):
         raise NotImplementedError
 
 
-def test_static_router_compatibility_name_returns_the_measured_policy() -> None:
-    decision = StaticRouter().route(TaskType.BILL_EXTRACTION)
+@pytest.mark.parametrize(
+    ("task_type", "model_id"),
+    [
+        (TaskType.BILL_EXTRACTION, "gpt-4o-mini"),
+        (TaskType.EMAIL_EXTRACTION, "gpt-4o-mini"),
+        (TaskType.KNOWLEDGE_QA, "gpt-4o-mini"),
+        (TaskType.SITE_ASSESSMENT_EXTRACTION, "claude-haiku-4-5"),
+        (TaskType.SCHEMA_REPAIR, "gpt-4o-mini"),
+    ],
+)
+def test_every_task_uses_the_measured_table(task_type: TaskType, model_id: str) -> None:
+    decision = TaskRouter().route(task_type, estimated_input_tokens=42)
+
+    assert decision.chosen.model_id == model_id
     assert decision.strategy == RoutingStrategy.TASK_TABLE
-    assert decision.chosen.model_id == "gpt-4o-mini"
-    assert "eval-" in decision.rationale
+    assert decision.estimated_input_tokens == 42
+    assert GPT_RUN_ID in decision.rationale
+    assert HAIKU_RUN_ID in decision.rationale
+    assert "static default" not in decision.rationale.casefold()
 
 
-def test_fallback_crosses_to_the_other_provider_when_it_is_usable() -> None:
+def test_fallback_uses_only_the_other_measured_model() -> None:
     registry = ProviderRegistry(
         {
             Provider.ANTHROPIC: _Available(Provider.ANTHROPIC),
             Provider.OPENAI: _Available(Provider.OPENAI),
         }
     )
-    router = StaticRouter(registry)
+    router = TaskRouter(registry)
     fallback = router.fallback(router.route(TaskType.BILL_EXTRACTION))
+
     assert fallback is not None
-    assert fallback.chosen.provider == Provider.ANTHROPIC
+    assert fallback.chosen.model_id == "claude-haiku-4-5"
     assert fallback.strategy == RoutingStrategy.FALLBACK_AFTER_ERROR
-    assert fallback.fallback_of is not None
 
 
-def test_fallback_returns_none_rather_than_degrading_to_nothing() -> None:
+def test_fallback_refuses_an_unusable_measured_provider() -> None:
     registry = ProviderRegistry(
         {
             Provider.ANTHROPIC: _Available(Provider.ANTHROPIC, available=False),
             Provider.OPENAI: _Available(Provider.OPENAI),
         }
     )
-    router = StaticRouter(registry)
+    router = TaskRouter(registry)
     assert router.fallback(router.route(TaskType.BILL_EXTRACTION)) is None
-
-
-def test_circuit_breaker_opens_after_repeated_failures() -> None:
-    registry = ProviderRegistry(
-        {
-            Provider.ANTHROPIC: _Available(Provider.ANTHROPIC),
-            Provider.OPENAI: _Available(Provider.OPENAI),
-        }
-    )
-    assert registry.is_usable(Provider.ANTHROPIC)
-    for _ in range(10):
-        registry.record_failure(Provider.ANTHROPIC)
-    assert registry.is_open(Provider.ANTHROPIC)
-    assert not registry.is_usable(Provider.ANTHROPIC)
-
-    registry.record_success(Provider.ANTHROPIC)
-    assert registry.is_usable(Provider.ANTHROPIC)

@@ -10,7 +10,7 @@ from voltdesk.contracts.common import Provider, TaskType
 from voltdesk.contracts.evaluation import EvaluationResult, GoldenRecord, RecordResult
 from voltdesk.contracts.routing import ModelChoice
 from voltdesk.evaluation import metrics
-from voltdesk.evaluation.runner import load_golden_set, run
+from voltdesk.evaluation.runner import BENCHMARK_MODEL_IDS, load_golden_set, run
 from voltdesk.evaluation.store import PartialEvaluation
 
 MODEL = ModelChoice(provider=Provider.ANTHROPIC, model_id="claude-opus-5")
@@ -93,6 +93,11 @@ def test_load_golden_set_has_the_binding_split() -> None:
     qa = [record for record in records if record.task_type == TaskType.KNOWLEDGE_QA]
     assert len(qa) == 40
     assert sum(bool(record.expected["should_abstain"]) for record in qa) == 15
+
+
+def test_benchmark_uses_only_the_operator_approved_models() -> None:
+    assert BENCHMARK_MODEL_IDS == ("claude-haiku-4-5", "gpt-4o-mini")
+    assert "claude-opus-5" not in BENCHMARK_MODEL_IDS
 
 
 def test_run_checkpoints_every_record(monkeypatch: pytest.MonkeyPatch) -> None:

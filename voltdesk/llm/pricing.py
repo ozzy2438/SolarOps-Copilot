@@ -76,10 +76,9 @@ OPENAI_MODELS: dict[str, ModelPrice] = {
 
 ALL_MODELS: dict[str, ModelPrice] = {**ANTHROPIC_MODELS, **OPENAI_MODELS}
 
-#: What the router picks when nothing more specific applies. Opus 5 is the default
-#: because Phase 1 has no measurements yet; Phase 4 replaces this with a task table
-#: driven by the benchmark, and records the change as an ADR.
-DEFAULT_MODEL_ID = "claude-opus-5"
+#: Safe fallback for callers that cannot express a task type. Normal production calls
+#: use TaskRouter's measured per-task table; the Phase 1 Opus default is retired.
+DEFAULT_MODEL_ID = "gpt-4o-mini"
 
 
 class UnknownModelError(KeyError):

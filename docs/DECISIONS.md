@@ -298,3 +298,43 @@ committed.
 setting; ordinary credentials behave exactly as before. A missing workspace ID for a
 key that requires one fails visibly at Anthropic's boundary rather than being guessed.
 Changing workspaces is a configuration change, not an application-code change.
+
+---
+
+## ADR-0018: Route by same-commit task measurements
+
+**Context.** ADR-0010 deliberately used a static default because no task-level
+comparison existed. Phase 4 completed `claude-haiku-4-5` run
+`eval-8325bd1c-879b-49a0-a858-b3d405377b8f` and `gpt-4o-mini` run
+`eval-8d41a233-c32d-4318-892d-02c8c6f1ff00`, both over 150 records at commit
+`f1f10ad03df810eaa2127167369044b5f943b59b`.
+
+**Decision.** Replace the static policy with `TaskRouter`. Use GPT Mini for bills,
+emails, QA and schema repair; use Haiku for site assessment. Exact match was tied on
+bills and emails, the QA intervals overlapped while GPT cost less, and Haiku's site
+interval did not overlap GPT's. Every routing rationale names the measurement runs.
+Fallback can use only the other measured model and only when its credential is usable.
+
+**Consequences.** Routing is evidence-based but bound to this synthetic-heavy golden
+set and point-in-time provider behaviour. A new golden-set version or model version
+requires a new benchmark and superseding ADR. `StaticRouter(registry)` remains a
+compatibility constructor so existing call sites adopt the measured router without
+editing Phase 2/3 modules that Phase 4 is forbidden to change.
+
+---
+
+## ADR-0019: Do not promote an uncalibrated confidence threshold
+
+**Context.** The combined routed field curve reached 96.06% accuracy at confidence
+0.95, then fell to 95.05% at 1.00. A confidence score whose higher bucket is less
+accurate is not calibrated under the binding evaluation rule.
+
+**Decision.** Do not derive a replacement for
+`VOLTDESK_AUTO_WRITE_CONFIDENCE_THRESHOLD`. Keep 0.85 as an explicitly unpromoted
+placeholder and require human review for any operational deployment until confidence
+is recalibrated on representative, human-labelled extraction data.
+
+**Consequences.** The current 0.85 setting must not be described as a measured safety
+boundary. It preserves compatibility for development and evaluation, but unattended
+CRM auto-write is not justified by Phase 4. A future threshold change must carry a
+monotonic coverage-accuracy curve and a superseding ADR.

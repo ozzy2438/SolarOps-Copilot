@@ -18,7 +18,7 @@ from voltdesk.llm.pricing import (
 
 def test_default_model_has_a_price() -> None:
     price = get_price(DEFAULT_MODEL_ID)
-    assert price.provider == Provider.ANTHROPIC
+    assert price.provider == Provider.OPENAI
     assert price.input_usd_per_mtok > 0
 
 
