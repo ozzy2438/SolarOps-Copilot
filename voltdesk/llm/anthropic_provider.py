@@ -47,10 +47,17 @@ class AnthropicProvider(LLMProvider):
         if self._client is None:
             import anthropic  # imported lazily: the package must import without the SDK
 
+            client_options: dict[str, Any] = {
+                "api_key": self._settings.anthropic_api_key.get_secret_value(),
+                "timeout": self._settings.llm_timeout_seconds,
+                "max_retries": self._settings.llm_max_retries,
+            }
+            workspace_id = self._settings.anthropic_workspace_id.get_secret_value().strip()
+            if workspace_id:
+                client_options["default_headers"] = {"anthropic-workspace-id": workspace_id}
+
             self._client = anthropic.Anthropic(
-                api_key=self._settings.anthropic_api_key.get_secret_value(),
-                timeout=self._settings.llm_timeout_seconds,
-                max_retries=self._settings.llm_max_retries,
+                **client_options,
             )
         return self._client
 

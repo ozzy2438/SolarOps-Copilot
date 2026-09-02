@@ -278,3 +278,23 @@ and migration dimension do not change.
 lazy local download and no corpus text is sent to an inference provider. Any future
 ONNX artifact change still requires an ADR and full-corpus re-embedding, even when its
 dimension remains 384.
+
+---
+
+## ADR-0017: Anthropic workspace routing is explicit and optional
+
+**Context.** Anthropic accepts ordinary API keys without a workspace header, while
+some workspace-scoped keys reject requests unless `anthropic-workspace-id` identifies
+their workspace. Sending a made-up, empty or unrelated identifier would break keys
+that do not use this mechanism and could route a request to the wrong workspace.
+
+**Decision.** Add the optional `VOLTDESK_ANTHROPIC_WORKSPACE_ID` setting. When its
+trimmed value is non-empty, `AnthropicProvider` supplies it to the official SDK as the
+`anthropic-workspace-id` default header. When it is absent or empty, the adapter does
+not configure that header at all. The value remains local configuration and is never
+committed.
+
+**Consequences.** Workspace-scoped credentials require one additional deployment
+setting; ordinary credentials behave exactly as before. A missing workspace ID for a
+key that requires one fails visibly at Anthropic's boundary rather than being guessed.
+Changing workspaces is a configuration change, not an application-code change.

@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     )
 
     anthropic_api_key: SecretStr = Field(default=SecretStr(""))
+    anthropic_workspace_id: SecretStr = Field(default=SecretStr(""))
     openai_api_key: SecretStr = Field(default=SecretStr(""))
 
     espocrm_base_url: str = Field(default="http://localhost:8080")
