@@ -2,14 +2,34 @@
 
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
 import pytest
 
-from voltdesk.contracts.retrieval import CorpusSource, RetrievalQuery
+from voltdesk.contracts.retrieval import (
+    AbstentionReason,
+    Chunk,
+    CorpusSource,
+    RetrievalQuery,
+)
 from voltdesk.ingestion.chunking import chunk_document
-from voltdesk.ingestion.corpus import ingest_path
-from voltdesk.ingestion.embeddings import store_chunks
+from voltdesk.ingestion.corpus import (
+    CorpusDocumentRecord,
+    InMemoryCorpusStore,
+    ingest_path,
+)
+from voltdesk.ingestion.embeddings import (
+    Embedder,
+    MiniLMEmbedder,
+    default_embedder,
+    store_chunks,
+)
 from voltdesk.retrieval.abstention import abstention_reason, support_score
-from voltdesk.retrieval.search import retrieve
+from voltdesk.retrieval.search import reciprocal_rank_fusion
 from voltdesk.retrieval.synthesis import synthesise, verify_citations
 
 pytestmark = pytest.mark.phase3
@@ -19,35 +39,156 @@ def _query() -> RetrievalQuery:
     return RetrievalQuery(query_id="q1", question="What is the export limit?")
 
 
-def test_chunking_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        chunk_document(None)  # type: ignore[arg-type]
+def test_chunking_rejects_invalid_target_size() -> None:
+    with pytest.raises(ValueError, match="positive"):
+        chunk_document(None, target_tokens=0)  # type: ignore[arg-type]
 
 
-def test_embedding_storage_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        store_chunks([], None)  # type: ignore[arg-type]
+def test_embedding_storage_records_model_and_dimension() -> None:
+    store = InMemoryCorpusStore()
+
+    class _Embedder(Embedder):
+        model_id = "test-embedding"
+        dimension = 2
+
+        def embed(self, texts: list[str]) -> list[list[float]]:
+            return [[1.0, 0.0] for _ in texts]
+
+    document = CorpusDocumentRecord(
+        document_id="doc-1",
+        title="Title",
+        source=CorpusSource.REGULATOR_METHODOLOGY,
+        source_url="https://example.test/source",
+        licence="CC BY 4.0",
+        retrieved_at=datetime(2026, 9, 1, tzinfo=UTC),
+        sha256="a" * 64,
+    )
+    chunk = Chunk(
+        chunk_id="chunk-1",
+        document_id="doc-1",
+        source=CorpusSource.REGULATOR_METHODOLOGY,
+        document_title="Title",
+        text="Verified content.",
+        section_path=["1. Eligibility"],
+        token_count=2,
+    )
+    assert store_chunks([chunk], _Embedder(), document=document, store=store) == 1
+    assert store.embedding_model_id == "test-embedding"
+    assert store.dimension == 2
 
 
-def test_corpus_ingestion_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        ingest_path("x.pdf", CorpusSource.INTERNAL_STANDARD, "Title")
+def test_default_embedding_model_is_pinned_and_384_dimensional() -> None:
+    embedder = default_embedder()
+
+    assert isinstance(embedder, MiniLMEmbedder)
+    assert embedder.dimension == 384
+    assert embedder.model_id.endswith("@5f1b8cd78bc4fb444dd171e59b18f3a3af89a079")
+    assert default_embedder() is embedder
 
 
-def test_retrieval_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        retrieve(_query())
+def test_corpus_ingestion_is_licence_gated_and_idempotent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "source.md"
+    path.write_text("# 1. Eligibility\n\nVerified content.", encoding="utf-8")
+    store = InMemoryCorpusStore()
+
+    class _Embedder(Embedder):
+        model_id = "test-embedding"
+        dimension = 2
+
+        def embed(self, texts: list[str]) -> list[list[float]]:
+            return [[1.0, 0.0] for _ in texts]
+
+    chunk = Chunk(
+        chunk_id="chunk-1",
+        document_id="doc-1",
+        source=CorpusSource.REGULATOR_METHODOLOGY,
+        document_title="Title",
+        text="Verified content.",
+        section_path=["1. Eligibility"],
+        token_count=2,
+    )
+    monkeypatch.setattr(
+        "voltdesk.ingestion.corpus.chunk_document", lambda _doc, **_kwargs: [chunk]
+    )
+
+    with pytest.raises(ValueError, match="verified licence"):
+        ingest_path(str(path), CorpusSource.REGULATOR_METHODOLOGY, "Title")
+
+    kwargs = {
+        "source_url": "https://example.test/source",
+        "licence": "CC BY 4.0",
+        "retrieved_at": datetime(2026, 9, 1, tzinfo=UTC),
+        "document_id": "doc-1",
+        "embedder": _Embedder(),
+        "store": store,
+    }
+    assert ingest_path(str(path), CorpusSource.REGULATOR_METHODOLOGY, "Title", **kwargs) == 1
+    assert ingest_path(str(path), CorpusSource.REGULATOR_METHODOLOGY, "Title", **kwargs) == 0
 
 
-def test_synthesis_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        synthesise(_query(), [])
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        verify_citations(None, [])  # type: ignore[arg-type]
+def test_corpus_dry_run_exits_nonzero_for_missing_licence(
+    tmp_path: Path,
+) -> None:
+    manifest = {
+        "documents": [
+            {
+                "path": "unlicensed.md",
+                "document_id": "unlicensed",
+                "title": "Unlicensed",
+                "source": "regulator_methodology",
+                "source_url": "https://example.test/unlicensed",
+                "licence": None,
+                "retrieved_at": "2026-09-01T00:00:00+10:00",
+            }
+        ]
+    }
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    script = Path(__file__).resolve().parents[1] / "scripts" / "ingest_corpus.py"
+    completed = subprocess.run(
+        [sys.executable, str(script), str(tmp_path), "--dry-run"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 2
+    assert "MISSING" in completed.stdout
 
 
-def test_abstention_scoring_is_not_implemented() -> None:
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        support_score(_query(), [])
-    with pytest.raises(NotImplementedError, match="Phase 3"):
-        abstention_reason(_query(), [], 0.1)
+def test_retrieval_fuses_lexical_and_vector_candidates() -> None:
+    chunk = Chunk(
+        chunk_id="chunk-1",
+        document_id="doc-1",
+        source=CorpusSource.REGULATOR_METHODOLOGY,
+        document_title="Title",
+        text="Clause 5.3 requires export control.",
+        section_path=["5.3 Export control"],
+        token_count=5,
+    )
+
+    result = reciprocal_rank_fusion([chunk], [chunk], top_k=1)
+
+    assert result[0].chunk == chunk
+    assert result[0].score == 1.0
+
+
+def test_empty_synthesis_abstains_without_a_citation() -> None:
+    answer = synthesise(_query(), [])
+
+    assert answer.abstained is True
+    assert answer.citations == []
+
+
+def test_abstained_answer_has_no_verifiable_citations() -> None:
+    assert verify_citations(synthesise(_query(), []), []) is False
+
+
+def test_empty_retrieval_has_zero_support() -> None:
+    assert support_score(_query(), []) == 0.0
+
+
+def test_non_domain_question_is_out_of_scope() -> None:
+    query = RetrievalQuery(query_id="q2", question="How do I bake bread?")
+    assert abstention_reason(query, [], 0.0) == AbstentionReason.OUT_OF_SCOPE

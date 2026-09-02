@@ -48,7 +48,6 @@ def test_openapi_is_a_complete_map_of_the_service(client: TestClient) -> None:
 @pytest.mark.parametrize(
     ("path", "phase"),
     [
-        ("/qa/corpus/stats", "Phase 3"),
         ("/admin/incidents", "Phase 4"),
     ],
 )
@@ -64,6 +63,42 @@ def test_review_list_is_no_longer_a_501(client: TestClient) -> None:
     response = client.get("/review")
     assert response.status_code == 200
     assert isinstance(response.json()["items"], list)
+
+
+def test_qa_abstention_is_a_200(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("voltdesk.api.routes.qa.retrieve", lambda _query: [])
+
+    response = client.post(
+        "/qa/ask",
+        json={"query_id": "q-out", "question": "Who won the football final?"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["abstained"] is True
+    assert response.json()["abstention_reason"] == "out_of_scope"
+
+
+def test_corpus_stats_is_no_longer_a_501(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "voltdesk.api.routes.qa._read_corpus_stats",
+        lambda: {
+            "documents": 3,
+            "chunks": 9,
+            "by_source": [
+                {"source": "rebate_program_doc", "documents": 3, "chunks": 9}
+            ],
+        },
+    )
+
+    response = client.get("/qa/corpus/stats")
+
+    assert response.status_code == 200
+    assert response.json()["documents"] == 3
+    assert response.json()["chunks"] == 9
 
 
 def test_submit_document_returns_202_without_waiting_for_a_model(

@@ -234,3 +234,47 @@ need a new dependency and a consistency story the worker does not have. Existing
 databases created from `0001`–`0004` pick this up by running the migration loop;
 Compose initdb on a fresh volume applies `0005` automatically.
 
+---
+
+## ADR-0015: Pin local 384-dimensional MiniLM embeddings
+
+**Context.** Knowledge retrieval needs a reproducible embedding model whose licence,
+revision and vector dimension are explicit. Provider embeddings would add credentials,
+cost and an external data path to an otherwise local corpus workflow. The committed
+`0003` migration deliberately left a 1536-dimensional placeholder for Phase 3 to
+replace through a new migration.
+
+**Decision.** Use `sentence-transformers/all-MiniLM-L6-v2` at immutable revision
+`1110a243fdf4706b3f48f1d95db1a4f5529b4d41`, under Apache-2.0. Store its full
+repository-and-revision identity with every normalized 384-dimensional vector.
+Load it locally and lazily; do not send corpus text to an embedding provider.
+`0006_embedding_dimension.sql` changes an empty placeholder column to `vector(384)`
+and refuses to reinterpret a non-empty 1536-dimensional corpus.
+
+**Consequences.** The model download is about 91 MB and inputs beyond the model's
+256-wordpiece limit are truncated, so structural chunks remain intentionally small.
+Changing the model or revision requires another ADR, a dimension-compatible migration
+when necessary, and explicit full-corpus re-embedding. A process cannot silently mix
+models or dimensions in one corpus.
+
+---
+
+## ADR-0016: Run pinned MiniLM as a CPU-only ONNX artifact
+
+**Context.** ADR-0015 selected the MiniLM network and 384-dimensional contract. Its
+first `sentence-transformers` implementation pulled GPU/CUDA runtime packages into the
+Linux service image even though VoltDesk runs embedding inference on CPU. That made the
+otherwise small service image unnecessarily large and made Compose acceptance costly.
+
+**Decision.** Preserve the same `all-MiniLM-L6-v2` network, Apache-2.0 licence, input
+limit and 384-dimensional normalized output, but execute Qdrant's official ONNX port
+with FastEmbed's CPU execution provider. Pin the ONNX artifact repository revision to
+`Qdrant/all-MiniLM-L6-v2-onnx@5f1b8cd78bc4fb444dd171e59b18f3a3af89a079`
+and store that exact runtime artifact identity with every vector. This supersedes only
+ADR-0015's stored repository identity and runtime implementation; the selected model
+and migration dimension do not change.
+
+**Consequences.** The service no longer installs PyTorch or CUDA. The model remains a
+lazy local download and no corpus text is sent to an inference provider. Any future
+ONNX artifact change still requires an ADR and full-corpus re-embedding, even when its
+dimension remains 384.
