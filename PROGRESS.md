@@ -445,7 +445,10 @@ successful Haiku call to be repeated after resume.
 source files, 158 tests passed and 15 schemas unchanged. Against the live isolated
 PostgreSQL database, `/metrics/page` returned HTTP 200 with two `p95` labels,
 `/admin/evaluations/{run_id}` returned the stored daily run and `/admin/incidents`
-returned HTTP 200.
+returned HTTP 200. After pushing `f8a1d0e`, a fresh GitHub clone with a new Python
+3.12 virtual environment and no `.env` independently produced the same `verify: OK`,
+including materialising all 110 ignored generated inputs; the clean worktree remained
+empty afterwards.
 
 **Acceptance override:** The Phase 4 brief named `claude-opus-5` and `gpt-4o`; the
 operator explicitly replaced them with `claude-haiku-4-5` and `gpt-4o-mini`. The old
