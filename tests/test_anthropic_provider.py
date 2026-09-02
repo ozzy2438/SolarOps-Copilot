@@ -9,6 +9,7 @@ import pytest
 
 from voltdesk.config import Settings
 from voltdesk.llm import anthropic_provider
+from voltdesk.llm.anthropic_provider import _structured_output_schema
 
 
 @pytest.mark.parametrize(
@@ -47,3 +48,27 @@ def test_workspace_header_is_only_configured_when_present(
         assert "default_headers" not in captured
     else:
         assert captured["default_headers"] == expected_headers
+
+
+def test_structured_output_schema_removes_unsupported_numeric_constraints() -> None:
+    source = {
+        "type": "object",
+        "properties": {
+            "confidence": {
+                "type": "number",
+                "minimum": 0.0,
+                "maximum": 1.0,
+            }
+        },
+        "required": ["confidence"],
+    }
+
+    transformed = _structured_output_schema(source)
+    confidence = transformed["properties"]["confidence"]
+
+    assert "minimum" not in confidence
+    assert "maximum" not in confidence
+    assert "minimum" in confidence["description"]
+    assert "maximum" in confidence["description"]
+    assert transformed["additionalProperties"] is False
+    assert source["properties"]["confidence"]["minimum"] == 0.0

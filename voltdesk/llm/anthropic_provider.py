@@ -86,7 +86,10 @@ class AnthropicProvider(LLMProvider):
             kwargs["stop_sequences"] = request.stop_sequences
         if request.json_schema is not None:
             kwargs["output_config"] = {
-                "format": {"type": "json_schema", "schema": request.json_schema}
+                "format": {
+                    "type": "json_schema",
+                    "schema": _structured_output_schema(request.json_schema),
+                }
             }
 
         started = time.perf_counter()
@@ -144,6 +147,13 @@ class AnthropicProvider(LLMProvider):
             stop_reason=stop_reason,
             raw_response_id=getattr(response, "id", None),
         )
+
+
+def _structured_output_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    """Adapt provider-neutral JSON Schema to Anthropic's supported subset."""
+    import anthropic
+
+    return anthropic.transform_schema(schema)
 
 
 def _usage_from(response: Any) -> TokenUsage:
